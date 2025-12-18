@@ -237,10 +237,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     super.initState();
     _screens.addAll([
       HomeScreen(cartItems: cartItems),
-      CategoriesScreen(),
-      SearchScreen(),
+      const CategoriesScreen(),
+      const SearchScreen(),
       CartScreen(cartItems: cartItems),
-      AccountScreen(),
+      const AccountScreen(),
     ]);
   }
 
@@ -466,7 +466,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             SizedBox(
-              height: 220,
+              height: 230, // Augmenté de 220 à 230
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: allProducts.where((p) => p.isPopular).length,
@@ -506,7 +506,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             SizedBox(
-              height: 220,
+              height: 230, // Augmenté de 220 à 230
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: allProducts.where((p) => p.isNew).length,
@@ -570,7 +570,7 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildProductCard(BuildContext context, Product product) {
     return Container(
-      width: 160,
+      width: 170, // Augmenté de 160 à 170
       margin: const EdgeInsets.only(right: 16),
       child: Card(
         elevation: 3,
@@ -589,6 +589,7 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Image container avec hauteur fixe
                 Container(
                   height: 100,
                   decoration: BoxDecoration(
@@ -604,21 +605,25 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  product.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
+                // Nom du produit avec hauteur fixe
+                SizedBox(
+                  height: 40, // Hauteur fixe pour 2 lignes
+                  child: Text(
+                    product.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   product.category,
                   style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
-                const SizedBox(height: 8),
+                const Spacer(), // Pousse le prix en bas
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -633,8 +638,8 @@ class HomeScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
-                        vertical: 2,
-                      ),
+                        vertical: 4,
+                      ), // Padding augmenté
                       decoration: BoxDecoration(
                         color: const Color(0xFF4DB6AC),
                         borderRadius: BorderRadius.circular(10),
@@ -663,40 +668,153 @@ class CategoriesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Catégories')),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-          final category = categories[index];
-          return Card(
-            margin: const EdgeInsets.only(bottom: 16),
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ExpansionTile(
-              leading: Icon(category.icon, color: const Color(0xFF00695C)),
-              title: Text(
-                category.name,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18,
+      appBar: AppBar(
+        title: const Text(
+          'Catégories',
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
+        ),
+        elevation: 0,
+        backgroundColor: const Color(0xFF00695C),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFE0F2F1), // Vert très clair
+              Color(0xFFF5F5F5), // Gris très léger pour le contraste
+            ],
+          ),
+        ),
+        child: ListView.builder(
+          padding: const EdgeInsets.all(20),
+          itemCount: categories.length,
+          itemBuilder: (context, index) {
+            final category = categories[index];
+            return Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: Material(
+                  color: Colors.white,
+                  child: ExpansionTile(
+                    tilePadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    leading: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            const Color(0xFF00695C),
+                            const Color(0xFF4DB6AC),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(category.icon, color: Colors.white, size: 22),
+                    ),
+                    title: Text(
+                      category.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF00695C),
+                      ),
+                    ),
+                    trailing: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE0F2F1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.expand_more,
+                        color: Color(0xFF00695C),
+                        size: 18,
+                      ),
+                    ),
+                    children: category.subcategories.map((subcategory) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [
+                              const Color(0xFFF8FDFC),
+                              const Color(0xFFE8F5F4),
+                            ],
+                          ),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 40,
+                            vertical: 10,
+                          ),
+                          leading: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF4DB6AC),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          title: Text(
+                            subcategory,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF37474F),
+                            ),
+                          ),
+                          trailing: Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  const Color(0xFF4DB6AC).withOpacity(0.1),
+                                  const Color(0xFF4DB6AC).withOpacity(0.2),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.chevron_right,
+                              color: Color(0xFF4DB6AC),
+                              size: 16,
+                            ),
+                          ),
+                          onTap: () {
+                            // Naviguer vers les produits de la sous-catégorie
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
-              children: category.subcategories.map((subcategory) {
-                return ListTile(
-                  leading: const SizedBox(width: 40),
-                  title: Text(subcategory),
-                  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                  onTap: () {
-                    // Naviguer vers les produits de la sous-catégorie
-                  },
-                );
-              }).toList(),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -746,9 +864,11 @@ class _SearchScreenState extends State<SearchScreen> {
           // Filtres
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
+            child: Column(
               children: [
-                Expanded(
+                // Dropdown avec largeur fixe
+                SizedBox(
+                  width: double.infinity, // Prend toute la largeur
                   child: DropdownButtonFormField<String>(
                     value: _selectedCategory,
                     decoration: InputDecoration(
@@ -756,12 +876,21 @@ class _SearchScreenState extends State<SearchScreen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 16,
+                      ),
                     ),
+                    isExpanded: true, // Important pour éviter l'overflow
                     items: ['Toutes', ...categories.map((cat) => cat.name)].map(
                       (String value) {
                         return DropdownMenuItem<String>(
                           value: value,
-                          child: Text(value),
+                          child: Text(
+                            value,
+                            overflow:
+                                TextOverflow.ellipsis, // Gère les textes longs
+                          ),
                         );
                       },
                     ).toList(),
@@ -773,26 +902,24 @@ class _SearchScreenState extends State<SearchScreen> {
                     },
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Prix max: ${_priceRange.toStringAsFixed(0)} €'),
-                      Slider(
-                        value: _priceRange,
-                        min: 0,
-                        max: 500,
-                        divisions: 10,
-                        onChanged: (value) {
-                          setState(() {
-                            _priceRange = value;
-                            _filterProducts();
-                          });
-                        },
-                      ),
-                    ],
-                  ),
+                const SizedBox(height: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Prix max: ${_priceRange.toStringAsFixed(0)} €'),
+                    Slider(
+                      value: _priceRange,
+                      min: 0,
+                      max: 500,
+                      divisions: 10,
+                      onChanged: (value) {
+                        setState(() {
+                          _priceRange = value;
+                          _filterProducts();
+                        });
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -807,7 +934,8 @@ class _SearchScreenState extends State<SearchScreen> {
                 crossAxisCount: 2,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                childAspectRatio: 0.75,
+                childAspectRatio:
+                    0.8, // Changé de 0.75 à 0.8 pour plus d'espace
               ),
               itemCount: _filteredProducts.length,
               itemBuilder: (context, index) {
@@ -840,7 +968,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildSearchProductCard(BuildContext context, Product product) {
     return Card(
-      elevation: 3,
+      elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -856,8 +984,10 @@ class _SearchScreenState extends State<SearchScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Image container
               Container(
-                height: 120,
+                height: 110, // Réduit de 120 à 110
+                width: double.infinity,
                 decoration: BoxDecoration(
                   color: const Color(0xFFE0F2F1),
                   borderRadius: BorderRadius.circular(8),
@@ -871,26 +1001,30 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
-                product.name,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
+              // Nom du produit avec hauteur fixe
+              SizedBox(
+                height: 40, // Hauteur fixe pour 2 lignes
+                child: Text(
+                  product.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               Text(
                 product.category,
                 style: const TextStyle(color: Colors.grey, fontSize: 12),
               ),
-              const Spacer(),
+              const Spacer(), // Pousse le prix en bas
               Text(
                 '${product.price.toStringAsFixed(2)} €',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 10,
                   color: Color(0xFF00695C),
                 ),
               ),
