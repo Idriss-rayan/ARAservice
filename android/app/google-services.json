@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "749134591992",
+    "project_id": "ara-service",
+    "storage_bucket": "ara-service.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:749134591992:android:62f43519ad0f368d9b880d",
+        "android_client_info": {
+          "package_name": "com.example.araservice"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdcuf5_VrZj1DgJf9fQ17TohxW1aEqY7I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

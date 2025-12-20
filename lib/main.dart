@@ -1,6 +1,11 @@
+import 'package:araservice/services/firebase_test.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const ARAApp());
 }
 
@@ -266,6 +271,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xFFE8F5F4),
       //extendBody: true, // permet l'effet flottant
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: Container(
@@ -683,6 +689,30 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+      // Dans la méthode build de HomeScreen, après le Scaffold
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await FirebaseTest.checkFirebase();
+          await FirebaseTest.testFirestore();
+          await FirebaseTest.testAuth();
+
+          // Afficher une alerte de confirmation
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Firebase Test'),
+              content: const Text('Tests exécutés. Vérifie la console.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        },
+        child: const Icon(Icons.bug_report),
       ),
     );
   }
@@ -2206,227 +2236,182 @@ class AccountScreen extends StatefulWidget {
 
 class _AccountScreenState extends State<AccountScreen> {
   bool _isLoggedIn = false;
-  String _userName = '';
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Mon Compte')),
-      body: SingleChildScrollView(
+      appBar: AppBar(title: const Text('Mon Compte'), centerTitle: true),
+      body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            if (!_isLoggedIn)
-              Column(
-                children: [
-                  const SizedBox(height: 40),
-                  const Icon(
-                    Icons.person_outline,
-                    size: 80,
-                    color: Color(0xFF00695C),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Connectez-vous à votre compte',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 30),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _isLoggedIn = true;
-                          _userName = 'Client ARA';
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00695C),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text(
-                        'Se connecter',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        setState(() {
-                          _isLoggedIn = true;
-                          _userName = 'Nouveau Client';
-                        });
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        side: const BorderSide(color: Color(0xFF00695C)),
-                      ),
-                      child: const Text(
-                        'Créer un compte',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Color(0xFF00695C),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              )
-            else
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE0F2F1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.person,
-                              size: 40,
-                              color: Color(0xFF00695C),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _userName,
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                const Text(
-                                  'Membre depuis 2023',
-                                  style: TextStyle(color: Colors.grey),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Mes Commandes',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF00695C),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildMenuItem(
-                    icon: Icons.history,
-                    title: 'Historique des commandes',
-                    onTap: () {},
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.local_shipping,
-                    title: 'Suivi de commande',
-                    onTap: () {},
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Mon Profil',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF00695C),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildMenuItem(
-                    icon: Icons.location_on,
-                    title: 'Adresses de livraison',
-                    onTap: () {},
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.payment,
-                    title: 'Moyens de paiement',
-                    onTap: () {},
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.notifications,
-                    title: 'Notifications',
-                    onTap: () {},
-                  ),
-                  const SizedBox(height: 24),
-                  _buildMenuItem(
-                    icon: Icons.settings,
-                    title: 'Paramètres',
-                    onTap: () {},
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _isLoggedIn = false;
-                          _userName = '';
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text(
-                        'Déconnexion',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-          ],
-        ),
+        child: _isLoggedIn ? _buildAccount() : _buildAuth(),
       ),
     );
   }
 
+  // -----------------------
+  // AUTH (Connexion / Inscription)
+  // -----------------------
+  Widget _buildAuth() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 40),
+          const Icon(Icons.person_outline, size: 90, color: Color(0xFF00695C)),
+          const SizedBox(height: 20),
+          const Text(
+            'Connexion avec email',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 30),
+
+          // Email
+          TextField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            decoration: InputDecoration(
+              labelText: 'Email',
+              prefixIcon: const Icon(Icons.email),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Mot de passe
+          TextField(
+            controller: _passwordController,
+            obscureText: true,
+            decoration: InputDecoration(
+              labelText: 'Mot de passe',
+              prefixIcon: const Icon(Icons.lock),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Se connecter
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                // TODO: Firebase Auth - signInWithEmailAndPassword
+                setState(() => _isLoggedIn = true);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00695C),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Se connecter',
+                style: TextStyle(fontSize: 16, color: Colors.white),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Créer un compte
+          TextButton(
+            onPressed: () {
+              // TODO: Firebase Auth - createUserWithEmailAndPassword
+              setState(() => _isLoggedIn = true);
+            },
+            child: const Text(
+              'Créer un compte avec email',
+              style: TextStyle(
+                color: Color(0xFF00695C),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // -----------------------
+  // COMPTE CONNECTÉ
+  // -----------------------
+  Widget _buildAccount() {
+    return Column(
+      children: [
+        Card(
+          elevation: 3,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: ListTile(
+            leading: const CircleAvatar(
+              backgroundColor: Color(0xFFE0F2F1),
+              child: Icon(Icons.person, color: Color(0xFF00695C)),
+            ),
+            title: const Text(
+              'Mon Compte',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(_emailController.text),
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        _buildMenuItem(
+          icon: Icons.history,
+          title: 'Historique des commandes',
+          onTap: () {},
+        ),
+
+        _buildMenuItem(icon: Icons.settings, title: 'Paramètres', onTap: () {}),
+
+        const Spacer(),
+
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _isLoggedIn = false;
+                _emailController.clear();
+                _passwordController.clear();
+              });
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              'Déconnexion',
+              style: TextStyle(fontSize: 16, color: Colors.white),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // -----------------------
+  // MENU ITEM
+  // -----------------------
   Widget _buildMenuItem({
     required IconData icon,
     required String title,
     required VoidCallback onTap,
   }) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: ListTile(
         leading: Icon(icon, color: const Color(0xFF00695C)),
         title: Text(title),
