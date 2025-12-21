@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'login_page.dart';
 import 'register_page.dart';
+import '../main_navigation_page.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -23,26 +26,29 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    // Animation logo (zoom)
+    /// 🔐 Vérification Firebase au lancement
+    _checkAuth();
+
+    /// Animation logo
     _logoController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     );
-    _logoAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    _logoAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _logoController, curve: Curves.elasticOut),
     );
 
-    // Animation texte (fade-in)
+    /// Animation texte
     _textController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     );
-    _textAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _textController, curve: Curves.easeIn));
+    _textAnimation = CurvedAnimation(
+      parent: _textController,
+      curve: Curves.easeIn,
+    );
 
-    // Animation boutons (slide from bottom)
+    /// Animation boutons
     _buttonsController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -52,10 +58,25 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
           CurvedAnimation(parent: _buttonsController, curve: Curves.easeOut),
         );
 
-    // Lancer les animations
+    /// Lancer animations
     _logoController.forward();
     _textController.forward();
     _buttonsController.forward();
+  }
+
+  /// 🔑 Vérifie si l'utilisateur est déjà connecté
+  void _checkAuth() {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+          (route) => false,
+        );
+      });
+    }
   }
 
   @override
@@ -81,11 +102,10 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Spacer(),
 
-                // Logo avec zoom
+                /// LOGO
                 ScaleTransition(
                   scale: _logoAnimation,
                   child: Container(
@@ -108,9 +128,10 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 24),
 
-                // Texte fade-in
+                /// TEXTE
                 FadeTransition(
                   opacity: _textAnimation,
                   child: Column(
@@ -135,7 +156,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
 
                 const Spacer(),
 
-                // Boutons slide-up avec icônes
+                /// BOUTONS
                 SlideTransition(
                   position: _buttonsOffsetAnimation,
                   child: Column(
@@ -149,10 +170,10 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
                             style: TextStyle(fontSize: 18, color: Colors.white),
                           ),
                           onPressed: () {
-                            Navigator.push(
+                            Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const LoginPage(),
+                                builder: (_) => const LoginPage(),
                               ),
                             );
                           },
@@ -163,7 +184,6 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
                               borderRadius: BorderRadius.circular(16),
                             ),
                             elevation: 5,
-                            shadowColor: Colors.black45,
                           ),
                         ),
                       ),
@@ -184,10 +204,10 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
                             ),
                           ),
                           onPressed: () {
-                            Navigator.push(
+                            Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const RegisterPage(),
+                                builder: (_) => const RegisterPage(),
                               ),
                             );
                           },
