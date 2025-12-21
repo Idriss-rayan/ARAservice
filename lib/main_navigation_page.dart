@@ -1,4 +1,5 @@
 import 'package:araservice/services/firebase_test.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:araservice/auth/register_page.dart';
 
@@ -188,8 +189,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       const CategoriesScreen(),
       const SearchScreen(),
       CartScreen(cartItems: cartItems),
-      //const AccountScreen(),
-      RegisterPage(),
+      const AccountScreen(),
+      //RegisterPage(),
     ]);
   }
 
@@ -2179,165 +2180,413 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
-  bool _isLoggedIn = false;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  late Stream<User?> _authStateChanges;
+  User? _currentUser;
 
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    _authStateChanges = _auth.authStateChanges();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Mon Compte'), centerTitle: true),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: _isLoggedIn ? _buildAccount() : _buildAuth(),
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(
+        title: const Text(
+          'Mon Compte',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1A3C34),
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFF1A3C34)),
+      ),
+      body: StreamBuilder<User?>(
+        stream: _authStateChanges,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8F5F2),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: AlwaysStoppedAnimation(Color(0xFF2E8B57)),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Chargement...',
+                    style: TextStyle(
+                      color: Color(0xFF1A3C34),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          _currentUser = snapshot.data;
+
+          if (_currentUser != null) {
+            return _buildAccount(_currentUser!);
+          } else {
+            return _buildAuth();
+          }
+        },
       ),
     );
   }
 
   // -----------------------
-  // AUTH (Connexion / Inscription)
+  // AUTH (Connexion / Inscription) - Avec ListView
   // -----------------------
   Widget _buildAuth() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          const SizedBox(height: 40),
-          const Icon(Icons.person_outline, size: 90, color: Color(0xFF00695C)),
-          const SizedBox(height: 20),
-          const Text(
-            'Connexion avec email',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 30),
+    final TextEditingController _emailController = TextEditingController();
+    final TextEditingController _passwordController = TextEditingController();
 
-          // Email
-          TextField(
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        const SizedBox(height: 40),
+        Center(
+          child: Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFE8F5F2), Color(0xFFD1E9E4)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFF2E8B57).withOpacity(0.2),
+                width: 2,
+              ),
+            ),
+            child: const Icon(
+              Icons.person_outlined,
+              size: 60,
+              color: Color(0xFF2E8B57),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        const Center(
+          child: Text(
+            'Bienvenue',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1A3C34),
+              letterSpacing: -0.5,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Center(
+          child: Text(
+            'Connectez-vous à votre compte',
+            style: TextStyle(fontSize: 16, color: Color(0xFF5A716B)),
+          ),
+        ),
+        const SizedBox(height: 40),
+
+        // Email
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE0E0E0), width: 1.5),
+          ),
+          child: TextField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
+            style: const TextStyle(color: Color(0xFF1A3C34), fontSize: 15),
             decoration: InputDecoration(
               labelText: 'Email',
-              prefixIcon: const Icon(Icons.email),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+              labelStyle: const TextStyle(
+                color: Color(0xFF5A716B),
+                fontSize: 14,
               ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Mot de passe
-          TextField(
-            controller: _passwordController,
-            obscureText: true,
-            decoration: InputDecoration(
-              labelText: 'Mot de passe',
-              prefixIcon: const Icon(Icons.lock),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Se connecter
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                // TODO: Firebase Auth - signInWithEmailAndPassword
-                setState(() => _isLoggedIn = true);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00695C),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              prefixIcon: Container(
+                margin: const EdgeInsets.all(12),
+                child: const Icon(
+                  Icons.email_outlined,
+                  color: Color(0xFF2E8B57),
+                  size: 22,
                 ),
               ),
-              child: const Text(
-                'Se connecter',
-                style: TextStyle(fontSize: 16, color: Colors.white),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 18,
+                horizontal: 16,
               ),
             ),
           ),
+        ),
+        const SizedBox(height: 16),
 
-          const SizedBox(height: 12),
-
-          // Créer un compte
-          TextButton(
-            onPressed: () {
-              // TODO: Firebase Auth - createUserWithEmailAndPassword
-              setState(() => _isLoggedIn = true);
-            },
-            child: const Text(
-              'Créer un compte avec email',
-              style: TextStyle(
-                color: Color(0xFF00695C),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // -----------------------
-  // COMPTE CONNECTÉ
-  // -----------------------
-  Widget _buildAccount() {
-    return Column(
-      children: [
-        Card(
-          elevation: 3,
-          shape: RoundedRectangleBorder(
+        // Mot de passe
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE0E0E0), width: 1.5),
           ),
-          child: ListTile(
-            leading: const CircleAvatar(
-              backgroundColor: Color(0xFFE0F2F1),
-              child: Icon(Icons.person, color: Color(0xFF00695C)),
+          child: TextField(
+            controller: _passwordController,
+            obscureText: true,
+            style: const TextStyle(color: Color(0xFF1A3C34), fontSize: 15),
+            decoration: InputDecoration(
+              labelText: 'Mot de passe',
+              labelStyle: const TextStyle(
+                color: Color(0xFF5A716B),
+                fontSize: 14,
+              ),
+              prefixIcon: Container(
+                margin: const EdgeInsets.all(12),
+                child: const Icon(
+                  Icons.lock_outlined,
+                  color: Color(0xFF2E8B57),
+                  size: 22,
+                ),
+              ),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 18,
+                horizontal: 16,
+              ),
             ),
-            title: const Text(
-              'Mon Compte',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Text(_emailController.text),
           ),
         ),
         const SizedBox(height: 24),
 
-        _buildMenuItem(
-          icon: Icons.history,
-          title: 'Historique des commandes',
-          onTap: () {},
-        ),
-
-        _buildMenuItem(icon: Icons.settings, title: 'Paramètres', onTap: () {}),
-
-        const Spacer(),
-
-        SizedBox(
+        // Se connecter
+        Container(
           width: double.infinity,
+          height: 56,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF2E8B57), Color(0xFF1A5D3E)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+          ),
           child: ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _isLoggedIn = false;
-                _emailController.clear();
-                _passwordController.clear();
-              });
+            onPressed: () async {
+              try {
+                await _auth.signInWithEmailAndPassword(
+                  email: _emailController.text.trim(),
+                  password: _passwordController.text.trim(),
+                );
+              } catch (e) {
+                _showErrorDialog(context, 'Erreur de connexion', e.toString());
+              }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              backgroundColor: Colors.transparent,
+              foregroundColor: Colors.white,
+              elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.login_rounded, size: 20),
+                SizedBox(width: 10),
+                Text(
+                  'Se connecter',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        // Séparateur
+        Row(
+          children: [
+            Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'ou',
+                style: TextStyle(color: Colors.grey[500], fontSize: 14),
               ),
             ),
-            child: const Text(
-              'Déconnexion',
-              style: TextStyle(fontSize: 16, color: Colors.white),
+            Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+          ],
+        ),
+
+        const SizedBox(height: 20),
+
+        // Créer un compte
+        Container(
+          width: double.infinity,
+          height: 56,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFF2E8B57), width: 1.5),
+          ),
+          child: TextButton(
+            onPressed: () async {
+              try {
+                await _auth.createUserWithEmailAndPassword(
+                  email: _emailController.text.trim(),
+                  password: _passwordController.text.trim(),
+                );
+              } catch (e) {
+                _showErrorDialog(
+                  context,
+                  'Erreur d\'inscription',
+                  e.toString(),
+                );
+              }
+            },
+            style: TextButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 16),
             ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.person_add_alt_1_rounded,
+                  color: Color(0xFF2E8B57),
+                  size: 20,
+                ),
+                SizedBox(width: 10),
+                Text(
+                  'Créer un compte',
+                  style: TextStyle(
+                    color: Color(0xFF2E8B57),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 30),
+
+        // Options supplémentaires
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FDFC),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE8F5F2), width: 1.5),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(
+                    Icons.help_outline_rounded,
+                    color: Color(0xFF2E8B57),
+                    size: 18,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'Besoin d\'aide ?',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1A3C34),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () {
+                  // Mot de passe oublié
+                  _showPasswordResetDialog(context, _emailController);
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  alignment: Alignment.centerLeft,
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.lock_reset_rounded,
+                      color: Color(0xFF2E8B57),
+                      size: 18,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Mot de passe oublié ?',
+                      style: TextStyle(
+                        color: Color(0xFF2E8B57),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () {
+                  // Contact support
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  alignment: Alignment.centerLeft,
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.support_agent_rounded,
+                      color: Color(0xFF2E8B57),
+                      size: 18,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Contacter le support',
+                      style: TextStyle(
+                        color: Color(0xFF2E8B57),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -2345,22 +2594,720 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   // -----------------------
-  // MENU ITEM
+  // COMPTE CONNECTÉ - Avec ListView
   // -----------------------
+  Widget _buildAccount(User user) {
+    return Column(
+      children: [
+        // En-tête du profil
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFE8F5F2), Color(0xFFD1E9E4)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: const Color(0xFF2E8B57).withOpacity(0.2),
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 70,
+                height: 70,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF2E8B57),
+                  border: Border.all(color: Colors.white, width: 3),
+                ),
+                child: user.photoURL != null
+                    ? ClipOval(
+                        child: Image.network(
+                          user.photoURL!,
+                          width: 70,
+                          height: 70,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.person_rounded,
+                        size: 32,
+                        color: Colors.white,
+                      ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.displayName ?? 'Utilisateur',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1A3C34),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      user.email ?? '',
+                      style: const TextStyle(
+                        color: Color(0xFF5A716B),
+                        fontSize: 14,
+                      ),
+                    ),
+                    if (user.emailVerified)
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2E8B57).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.verified_rounded,
+                                  size: 12,
+                                  color: Color(0xFF2E8B57),
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Vérifié',
+                                  style: TextStyle(
+                                    color: Color(0xFF2E8B57),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // Liste des sections avec ListView
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            children: [
+              // Section: Informations personnelles
+              _buildSectionHeader(
+                icon: Icons.info_outline_rounded,
+                title: 'Informations personnelles',
+              ),
+              const SizedBox(height: 12),
+
+              _buildInfoTile(
+                icon: Icons.email_rounded,
+                title: 'Adresse email',
+                value: user.email ?? 'Non défini',
+                isVerified: user.emailVerified,
+              ),
+
+              if (user.phoneNumber != null)
+                _buildInfoTile(
+                  icon: Icons.phone_android_rounded,
+                  title: 'Téléphone',
+                  value: user.phoneNumber!,
+                ),
+
+              _buildInfoTile(
+                icon: Icons.fingerprint_rounded,
+                title: 'Identifiant',
+                value: 'UID: ${user.uid.substring(0, 12)}...',
+              ),
+
+              _buildInfoTile(
+                icon: Icons.calendar_month_rounded,
+                title: 'Compte créé',
+                value: user.metadata.creationTime != null
+                    ? 'Le ${user.metadata.creationTime!.day}/${user.metadata.creationTime!.month}/${user.metadata.creationTime!.year}'
+                    : 'Date inconnue',
+              ),
+
+              const SizedBox(height: 24),
+
+              // Section: Préférences
+              _buildSectionHeader(
+                icon: Icons.settings_outlined,
+                title: 'Préférences',
+              ),
+              const SizedBox(height: 12),
+
+              _buildMenuItem(
+                icon: Icons.history_rounded,
+                title: 'Historique des commandes',
+                onTap: () {},
+              ),
+
+              _buildMenuItem(
+                icon: Icons.notifications_active_rounded,
+                title: 'Notifications',
+                onTap: () {},
+              ),
+
+              _buildMenuItem(
+                icon: Icons.security_rounded,
+                title: 'Sécurité',
+                onTap: () {},
+              ),
+
+              _buildMenuItem(
+                icon: Icons.privacy_tip_rounded,
+                title: 'Confidentialité',
+                onTap: () {},
+              ),
+
+              _buildMenuItem(
+                icon: Icons.language_rounded,
+                title: 'Langue',
+                subtitle: 'Français',
+                onTap: () {},
+              ),
+
+              _buildMenuItem(
+                icon: Icons.help_outline_rounded,
+                title: 'Centre d\'aide',
+                onTap: () {},
+              ),
+
+              const SizedBox(height: 24),
+
+              // Section: Actions
+              _buildSectionHeader(icon: Icons.tune_rounded, title: 'Actions'),
+              const SizedBox(height: 12),
+
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: const Color(0xFFE0E0E0),
+                    width: 1.5,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4CAF50).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.upgrade_rounded,
+                          color: Color(0xFF4CAF50),
+                          size: 20,
+                        ),
+                      ),
+                      title: const Text(
+                        'Mettre à niveau le compte',
+                        style: TextStyle(
+                          color: Color(0xFF1A3C34),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      trailing: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4CAF50).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          'PRO',
+                          style: TextStyle(
+                            color: Color(0xFF4CAF50),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Bouton Déconnexion
+              Container(
+                width: double.infinity,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: const Color(0xFFF44336).withOpacity(0.3),
+                    width: 1.5,
+                  ),
+                ),
+                child: TextButton(
+                  onPressed: () async {
+                    await _auth.signOut();
+                  },
+                  style: TextButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.logout_rounded,
+                        color: Color(0xFFF44336),
+                        size: 20,
+                      ),
+                      SizedBox(width: 10),
+                      Text(
+                        'Se déconnecter',
+                        style: TextStyle(
+                          color: Color(0xFFF44336),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // Informations légales
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FDFC),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: const Color(0xFFE8F5F2),
+                    width: 1.5,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'ARA Service',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2E8B57),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Version 1.0.0',
+                      style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '© 2024 ARA Service. Tous droits réservés.',
+                      style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        TextButton(
+                          onPressed: () {},
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                          ),
+                          child: Text(
+                            'Conditions d\'utilisation',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey[600],
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        TextButton(
+                          onPressed: () {},
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                          ),
+                          child: Text(
+                            'Politique de confidentialité',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey[600],
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // -----------------------
+  // WIDGETS RÉUTILISABLES
+  // -----------------------
+
+  Widget _buildSectionHeader({required IconData icon, required String title}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Row(
+        children: [
+          Icon(icon, color: const Color(0xFF2E8B57), size: 18),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1A3C34),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoTile({
+    required IconData icon,
+    required String title,
+    required String value,
+    bool isVerified = false,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE0E0E0), width: 1.5),
+      ),
+      child: ListTile(
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: const Color(0xFF2E8B57).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: const Color(0xFF2E8B57), size: 20),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: Color(0xFF1A3C34),
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              value,
+              style: const TextStyle(color: Color(0xFF5A716B), fontSize: 13),
+            ),
+            if (isVerified) const SizedBox(height: 4),
+            if (isVerified)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4CAF50).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.verified_rounded,
+                      size: 10,
+                      color: Color(0xFF4CAF50),
+                    ),
+                    SizedBox(width: 4),
+                    Text(
+                      'Email vérifié',
+                      style: TextStyle(
+                        color: Color(0xFF4CAF50),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        trailing: const Icon(
+          Icons.chevron_right_rounded,
+          color: Color(0xFF5A716B),
+          size: 20,
+        ),
+      ),
+    );
+  }
+
   Widget _buildMenuItem({
     required IconData icon,
     required String title,
-    required VoidCallback onTap,
+    String? subtitle,
+    VoidCallback? onTap,
   }) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE0E0E0), width: 1.5),
+      ),
       child: ListTile(
-        leading: Icon(icon, color: const Color(0xFF00695C)),
-        title: Text(title),
-        trailing: const Icon(Icons.chevron_right),
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: const Color(0xFF2E8B57).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: const Color(0xFF2E8B57), size: 20),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: Color(0xFF1A3C34),
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        subtitle: subtitle != null
+            ? Text(
+                subtitle,
+                style: const TextStyle(color: Color(0xFF5A716B), fontSize: 13),
+              )
+            : null,
+        trailing: const Icon(
+          Icons.chevron_right_rounded,
+          color: Color(0xFF5A716B),
+          size: 20,
+        ),
         onTap: onTap,
+      ),
+    );
+  }
+
+  // -----------------------
+  // DIALOGS
+  // -----------------------
+
+  void _showErrorDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEE8E7),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: const Icon(
+                  Icons.error_outline_rounded,
+                  color: Color(0xFFF44336),
+                  size: 30,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1A3C34),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Color(0xFF5A716B), fontSize: 14),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2E8B57),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Compris',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showPasswordResetDialog(
+    BuildContext context,
+    TextEditingController emailController,
+  ) {
+    final resetEmailController = TextEditingController(
+      text: emailController.text,
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F5F2),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: const Icon(
+                  Icons.lock_reset_rounded,
+                  color: Color(0xFF2E8B57),
+                  size: 30,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Réinitialiser le mot de passe',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1A3C34),
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Entrez votre email pour recevoir un lien de réinitialisation',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Color(0xFF5A716B), fontSize: 14),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: resetEmailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  prefixIcon: const Icon(Icons.email_outlined),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        side: const BorderSide(color: Color(0xFF2E8B57)),
+                      ),
+                      child: const Text(
+                        'Annuler',
+                        style: TextStyle(color: Color(0xFF2E8B57)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        try {
+                          await _auth.sendPasswordResetEmail(
+                            email: resetEmailController.text.trim(),
+                          );
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Email de réinitialisation envoyé !',
+                              ),
+                              backgroundColor: Color(0xFF2E8B57),
+                            ),
+                          );
+                        } catch (e) {
+                          _showErrorDialog(context, 'Erreur', e.toString());
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2E8B57),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('Envoyer'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

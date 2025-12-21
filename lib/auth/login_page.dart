@@ -1,9 +1,9 @@
 import 'package:araservice/auth/register_page.dart';
+import 'package:araservice/main_navigation_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:lottie/lottie.dart';
 
 class LoginPage extends StatefulWidget {
   final VoidCallback? onLoginSuccess;
@@ -41,11 +41,13 @@ class _LoginPageState extends State<LoginPage> {
       // Animation de succès
       _showLoginAnimation();
 
-      if (widget.onLoginSuccess != null) {
-        Future.delayed(const Duration(milliseconds: 1500), () {
-          widget.onLoginSuccess!();
-        });
-      }
+      // Redirection vers MainNavigationPage après 1.5s
+      Future.delayed(const Duration(milliseconds: 1500), () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+        );
+      });
     } catch (error) {
       _showErrorSnackbar(error.toString());
       setState(() => _isLoading = false);
@@ -64,10 +66,22 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Lottie.asset(
-                'assets/animations/login.json',
+              Container(
                 width: 200,
                 height: 200,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF00695C), Color(0xFF4DB6AC)],
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_rounded,
+                  color: Colors.white,
+                  size: 100,
+                ),
               ),
               const SizedBox(height: 20),
               const Text(
@@ -115,21 +129,32 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FDFF),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Logo et titre
-                Column(
+        child: Container(
+          width: screenWidth,
+          height: screenHeight,
+          padding: EdgeInsets.symmetric(
+            horizontal: screenWidth * 0.05,
+            vertical: screenHeight * 0.02,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Logo et titre (Partie haute)
+              Flexible(
+                flex: 2,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 100,
-                      height: 100,
+                      width: screenWidth * 0.22,
+                      height: screenWidth * 0.22,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           begin: Alignment.topLeft,
@@ -152,40 +177,40 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ).animate().scale(duration: 700.ms),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: screenHeight * 0.02),
 
                     Text(
                       'ARA Service',
                       style: TextStyle(
-                        fontSize: 40,
+                        fontSize: screenWidth * 0.09,
                         fontWeight: FontWeight.w900,
                         color: const Color(0xFF00695C),
                         letterSpacing: -0.5,
                       ),
                     ).animate().fadeIn(delay: 200.ms),
 
-                    const SizedBox(height: 8),
+                    SizedBox(height: screenHeight * 0.005),
 
                     Text(
                       'Votre partenaire quotidien',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: screenWidth * 0.045,
                         color: Colors.grey.shade600,
                         fontWeight: FontWeight.w500,
                       ),
                     ).animate().fadeIn(delay: 400.ms),
                   ],
                 ),
-                // Animation de bienvenue
-                Center(
-                  child: Lottie.asset(
-                    'assets/animations/login.json',
-                    width: 280,
-                    height: 280,
+              ),
+
+              // Carte de connexion (Partie centrale)
+              Flexible(
+                flex: 3,
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxWidth: 400,
+                    minHeight: screenHeight * 0.4,
                   ),
-                ).animate().scale(delay: 600.ms, duration: 800.ms),
-                // Carte de connexion
-                Container(
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       begin: Alignment.topCenter,
@@ -205,32 +230,34 @@ class _LoginPageState extends State<LoginPage> {
                       width: 1,
                     ),
                   ),
-                  padding: const EdgeInsets.all(32),
+                  padding: EdgeInsets.all(screenWidth * 0.05),
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         'Accédez à votre espace',
                         style: TextStyle(
-                          fontSize: 26,
+                          fontSize: screenWidth * 0.065,
                           fontWeight: FontWeight.w800,
                           color: const Color(0xFF00695C),
                           height: 1.2,
                         ),
+                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: screenHeight * 0.005),
                       Text(
                         'Connectez-vous en un clic',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: screenWidth * 0.04,
                           color: Colors.grey.shade600,
                         ),
+                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 40),
+                      SizedBox(height: screenHeight * 0.03),
 
                       // Bouton Google principal
                       Container(
-                            width: double.infinity,
-                            height: 68,
+                            height: screenHeight * 0.075,
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 begin: Alignment.centerLeft,
@@ -305,9 +332,9 @@ class _LoginPageState extends State<LoginPage> {
                           .slideY(duration: 500.ms)
                           .fadeIn(delay: 800.ms),
 
-                      const SizedBox(height: 24),
+                      SizedBox(height: screenHeight * 0.02),
 
-                      // Alternative rapide (si besoin plus tard)
+                      // Alternative rapide
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -336,116 +363,120 @@ class _LoginPageState extends State<LoginPage> {
                     ],
                   ),
                 ),
+              ),
 
-                const SizedBox(height: 40),
-
-                // Avantages rapides
-                Wrap(
-                  spacing: 20,
-                  runSpacing: 15,
+              // Avantages rapides et liens (Partie basse)
+              Flexible(
+                flex: 2,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildQuickBenefit(
-                      icon: Icons.rocket_launch_rounded,
-                      text: 'Accès instantané',
-                    ),
-                    _buildQuickBenefit(
-                      icon: Icons.shield_rounded,
-                      text: '100% sécurisé',
-                    ),
-                    _buildQuickBenefit(
-                      icon: Icons.devices_rounded,
-                      text: 'Multi-appareils',
-                    ),
-                  ],
-                ).animate().fadeIn(delay: 1000.ms),
+                    // Avantages rapides
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        _buildQuickBenefit(
+                          icon: Icons.rocket_launch_rounded,
+                          text: 'Accès instantané',
+                        ),
+                        _buildQuickBenefit(
+                          icon: Icons.shield_rounded,
+                          text: '100% sécurisé',
+                        ),
+                        _buildQuickBenefit(
+                          icon: Icons.devices_rounded,
+                          text: 'Multi-appareils',
+                        ),
+                      ],
+                    ).animate().fadeIn(delay: 1000.ms),
 
-                const SizedBox(height: 40),
-
-                // Lien vers inscription
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Nouveau chez ARA ? ',
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 15,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (context) => RegisterPage(),
+                    // Lien vers inscription
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Nouveau chez ARA ? ',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 15,
                           ),
-                        );
-                      },
-                      child: Text(
-                        'Créer un compte',
-                        style: const TextStyle(
-                          color: Color(0xFF00695C),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          decoration: TextDecoration.underline,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (context) => RegisterPage(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'Créer un compte',
+                            style: const TextStyle(
+                              color: Color(0xFF00695C),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ).animate().fadeIn(delay: 1200.ms),
+
+                    // Garanties
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFFE8F5F4),
+                            const Color(0xFFE3F2FD),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFF4DB6AC).withOpacity(0.2),
                         ),
                       ),
-                    ),
-                  ],
-                ).animate().fadeIn(delay: 1200.ms),
-
-                const SizedBox(height: 40),
-
-                // Garanties
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFFE8F5F4),
-                        const Color(0xFFE3F2FD),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: const Color(0xFF4DB6AC).withOpacity(0.2),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            Icons.verified_rounded,
-                            color: const Color(0xFF00695C),
-                            size: 18,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.verified_rounded,
+                                color: const Color(0xFF00695C),
+                                size: 16,
+                              ),
+                              const SizedBox(width: 6),
+                              const Text(
+                                'Garanties ARA Service',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF00695C),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Garanties ARA Service',
+                          SizedBox(height: screenHeight * 0.005),
+                          Text(
+                            'Votre vie privée est notre priorité.',
+                            textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF00695C),
+                              fontSize: 11,
+                              color: Colors.grey.shade700,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Votre vie privée est notre priorité. Nous utilisons la sécurité Google pour protéger vos données.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ).animate().fadeIn(delay: 1400.ms),
-
-                const SizedBox(height: 30),
-              ],
-            ),
+                    ).animate().fadeIn(delay: 1400.ms),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -454,14 +485,14 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildQuickBenefit({required IconData icon, required String text}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            blurRadius: 8,
             offset: const Offset(0, 4),
           ),
         ],
@@ -470,12 +501,12 @@ class _LoginPageState extends State<LoginPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: const Color(0xFF4DB6AC), size: 18),
-          const SizedBox(width: 8),
+          Icon(icon, color: const Color(0xFF4DB6AC), size: 16),
+          const SizedBox(width: 6),
           Text(
             text,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 12,
               fontWeight: FontWeight.w600,
               color: Colors.grey.shade700,
             ),

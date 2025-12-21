@@ -1,9 +1,9 @@
 import 'package:araservice/auth/login_page.dart';
+import 'package:araservice/main_navigation_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:lottie/lottie.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -34,8 +34,7 @@ class _RegisterPageState extends State<RegisterPage> {
         return;
       }
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      final googleAuth = await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -43,14 +42,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
       await FirebaseAuth.instance.signInWithCredential(credential);
 
-      // Succès
       _showSuccessDialog(googleUser);
 
-      if (widget.onRegisterSuccess != null) {
-        widget.onRegisterSuccess!();
-      }
-    } catch (error) {
-      _showErrorSnackbar(error.toString());
+      widget.onRegisterSuccess?.call();
+    } catch (e) {
+      _showErrorSnackbar(e.toString());
     } finally {
       setState(() => _isLoading = false);
     }
@@ -60,69 +56,64 @@ class _RegisterPageState extends State<RegisterPage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
+      builder: (_) {
         return Dialog(
           backgroundColor: Colors.transparent,
           child: Container(
+            padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
                 colors: [Color(0xFF00695C), Color(0xFF4DB6AC)],
               ),
               borderRadius: BorderRadius.circular(28),
             ),
-            padding: const EdgeInsets.all(32),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Lottie.asset(
-                  'assets/animations/success.json',
-                  width: 150,
-                  height: 150,
-                ),
-                const SizedBox(height: 20),
+                Lottie.asset('assets/animations/success.json', width: 140),
+                const SizedBox(height: 16),
                 Text(
                   'Bienvenue ${user.displayName ?? 'chez ARA'} !',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
                   textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 Text(
                   'Votre compte a été créé avec succès',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white.withOpacity(0.9),
-                  ),
                   textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 15,
+                  ),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(context);
-                    if (widget.onRegisterSuccess != null) {
-                      widget.onRegisterSuccess!();
-                    }
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const MainNavigationScreen(),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: const Color(0xFF00695C),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 40,
-                      vertical: 16,
+                      horizontal: 36,
+                      vertical: 14,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    elevation: 5,
                   ),
                   child: const Text(
                     'Commencer l\'expérience',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                    style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
               ],
@@ -137,21 +128,7 @@ class _RegisterPageState extends State<RegisterPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: Colors.red.shade600,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        content: Row(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Erreur: ${error.length > 50 ? '${error.substring(0, 50)}...' : error}',
-                style: const TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-        duration: const Duration(seconds: 4),
+        content: Text(error, maxLines: 2),
       ),
     );
   }
@@ -159,199 +136,172 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   backgroundColor: Color(0xFF00695C),
-      //   title: Center(
-      //     child: Text(
-      //       "Inscription",
-      //       style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-      //     ),
-      //   ),
-      // ),
       backgroundColor: const Color(0xFFF8FDFF),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 70,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0xFF00695C), Color(0xFF4DB6AC)],
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF00695C).withOpacity(0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Container(
+              height: constraints.maxHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              child: Column(
+                children: [
+                  /// HEADER
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                            width: 64,
+                            height: 64,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [Color(0xFF00695C), Color(0xFF4DB6AC)],
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.person_add_alt_1_rounded,
+                              color: Colors.white,
+                              size: 34,
+                            ),
+                          )
+                          .animate()
+                          // Apparition douce
+                          .fadeIn(duration: 400.ms)
+                          // Zoom progressif
+                          .scale(
+                            begin: const Offset(0.6, 0.6),
+                            end: const Offset(1.0, 1.0),
+                            duration: 5.seconds,
+                            curve: Curves.easeInOut,
+                          )
+                          // Rotation complète
+                          .rotate(
+                            begin: 0,
+                            end: 1, // 360°
+                            duration: 2.seconds,
+                            curve: Curves.easeInOut,
                           ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.person_add_alt_1_rounded,
-                        color: Colors.white,
-                        size: 36,
-                      ),
-                    ).animate().scale(duration: 600.ms),
 
-                    const SizedBox(height: 12),
-                    Text(
-                      'Rejoignez la famille\nARA Service',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.w900,
-                        color: const Color(0xFF00695C),
-                        height: 1.1,
-                        letterSpacing: -0.5,
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Rejoignez la famille\nARA Service',
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF00695C),
+                          height: 1.1,
+                        ),
                       ),
-                    ).animate().fadeIn(delay: 200.ms).slideY(duration: 500.ms),
-
-                    const SizedBox(height: 6),
-
-                    Text(
-                      'Créez votre compte en un clic et profitez de tous nos services',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ).animate().fadeIn(delay: 400.ms),
-                  ],
-                ),
-                // Animation Lottie
-                Center(
-                  child: Lottie.asset(
-                    'assets/animations/welcome.json',
-                    width: 250,
-                    height: 250,
-                    fit: BoxFit.contain,
-                  ),
-                ).animate().scale(delay: 600.ms, duration: 800.ms),
-                // Bouton d'inscription Google
-                Container(
-                  width: double.infinity,
-                  height: 68,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [Color(0xFF4285F4), Color(0xFF34A853)],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF4285F4).withOpacity(0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Créez votre compte en un clic et profitez de tous nos services',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ],
                   ),
-                  child: Material(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(20),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: _isLoading ? null : _registerWithGoogle,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          if (_isLoading)
-                            const CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 3,
-                            )
-                          else
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: 42,
-                                  height: 42,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  padding: const EdgeInsets.all(8),
-                                  child: Image.asset(
-                                    'assets/google.png',
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                                const SizedBox(width: 20),
-                                const Text(
-                                  'S\'inscrire avec Google',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                        ],
+
+                  /// LOTTIE
+                  Expanded(
+                    flex: 3,
+                    child: Center(
+                      child: Lottie.asset(
+                        'assets/animations/welcome.json',
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),
-                ).animate().slideY(duration: 600.ms).fadeIn(delay: 800.ms),
 
-                const SizedBox(height: 24),
-
-                // Avantages
-                Column(
-                  children: [
-                    _buildFeature(
-                      icon: Icons.bolt_rounded,
-                      text: 'Accès immédiat à tous nos services',
+                  /// GOOGLE BUTTON
+                  SizedBox(
+                    width: double.infinity,
+                    height: 64,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(18),
+                      onTap: _isLoading ? null : _registerWithGoogle,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF4285F4), Color(0xFF34A853)],
+                          ),
+                        ),
+                        child: Center(
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      width: 40,
+                                      height: 40,
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Image.asset('assets/google.png'),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    const Text(
+                                      'S\'inscrire avec Google',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 12),
-                    _buildFeature(
-                      icon: Icons.security_rounded,
-                      text: 'Sécurité Google garantie',
-                    ),
-                    const SizedBox(height: 12),
-                    _buildFeature(
-                      icon: Icons.star_rounded,
-                      text: 'Expérience personnalisée',
-                    ),
-                  ],
-                ).animate().fadeIn(delay: 1000.ms),
+                  ),
 
-                const SizedBox(height: 40),
+                  const SizedBox(height: 12),
 
-                // Lien vers login
-                Center(
-                  child: GestureDetector(
-                    //onTap: widget.onNavigateToLogin,
+                  /// FEATURES
+                  Column(
+                    children: [
+                      _buildFeature(
+                        icon: Icons.bolt_rounded,
+                        text: 'Accès immédiat à tous nos services',
+                      ),
+                      _buildFeature(
+                        icon: Icons.security_rounded,
+                        text: 'Sécurité Google garantie',
+                      ),
+                      _buildFeature(
+                        icon: Icons.star_rounded,
+                        text: 'Expérience personnalisée',
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  /// LOGIN
+                  GestureDetector(
                     onTap: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (context) => LoginPage()),
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => LoginPage()),
                       );
                     },
-                    child: RichText(
-                      text: TextSpan(
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 15,
-                        ),
+                    child: const Text.rich(
+                      TextSpan(
+                        text: 'Déjà un compte ? ',
+                        style: TextStyle(color: Colors.grey),
                         children: [
-                          const TextSpan(text: 'Déjà un compte ? '),
                           TextSpan(
                             text: 'Se connecter',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Color(0xFF00695C),
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.bold,
                               decoration: TextDecoration.underline,
                             ),
                           ),
@@ -359,73 +309,77 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                   ),
-                ).animate().fadeIn(delay: 1200.ms),
 
-                const SizedBox(height: 40),
+                  const SizedBox(height: 10),
 
-                // Footer sécurité
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE8F5F4).withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: const Color(0xFF4DB6AC).withOpacity(0.3),
+                  /// FOOTER
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8F5F4),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.verified_user_rounded,
-                        color: const Color(0xFF00695C),
-                        size: 22,
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Text(
-                          'Vos données sont protégées et ne seront jamais partagées sans votre consentement.',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey.shade700,
-                            fontWeight: FontWeight.w500,
+                    child: Row(
+                      children: [
+                        const Icon(
+                              Icons.verified_user_rounded,
+                              color: Color(0xFF00695C),
+                            )
+                            .animate()
+                            .fadeIn(duration: 500.ms)
+                            .slideX(begin: -0.2)
+                            .then()
+                            .shakeY(amount: 2),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Vos données sont protégées et ne seront jamais partagées.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade700,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ).animate().fadeIn(delay: 1400.ms),
-              ],
-            ),
-          ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
   Widget _buildFeature({required IconData icon, required String text}) {
-    return Row(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: const Color(0xFFE8F5F4),
-            shape: BoxShape.circle,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Color(0xFFE8F5F4),
+            ),
+            child: Icon(icon, color: const Color(0xFF00695C), size: 20)
+                .animate()
+                .fadeIn(duration: 400.ms)
+                .scale(curve: Curves.easeOutBack)
+                .then()
+                .shakeX(amount: 2),
           ),
-          child: Icon(icon, color: const Color(0xFF00695C), size: 20),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey.shade700,
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(fontSize: 15, color: Colors.grey.shade700),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
