@@ -30,6 +30,7 @@ class _RegisterPageState extends State<RegisterPage> {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
+        if (!mounted) return;
         setState(() => _isLoading = false);
         return;
       }
@@ -42,12 +43,26 @@ class _RegisterPageState extends State<RegisterPage> {
 
       await FirebaseAuth.instance.signInWithCredential(credential);
 
+      if (!mounted) return;
+
+      // Optionnel : animation ou message de succès
       _showSuccessDialog(googleUser);
 
+      // Attendre 1.5s pour que l’utilisateur voie le succès avant navigation
+      await Future.delayed(const Duration(milliseconds: 1500));
+      if (!mounted) return;
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+        (route) => false,
+      );
+
+      // Appel du callback si défini
       widget.onRegisterSuccess?.call();
     } catch (e) {
+      if (!mounted) return;
       _showErrorSnackbar(e.toString());
-    } finally {
       setState(() => _isLoading = false);
     }
   }
@@ -90,38 +105,23 @@ class _RegisterPageState extends State<RegisterPage> {
                     fontSize: 15,
                   ),
                 ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const MainNavigationScreen(),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF00695C),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 36,
-                      vertical: 14,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: const Text(
-                    'Commencer l\'expérience',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
               ],
             ),
           ),
         );
       },
     );
+
+    // Navigation automatique après 1.5s
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (!mounted) return;
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+        (route) => false,
+      );
+    });
   }
 
   void _showErrorSnackbar(String error) {
