@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        setState(() => _isLoading = false);
+        if (mounted) setState(() => _isLoading = false);
         return;
       }
 
@@ -38,17 +38,23 @@ class _LoginPageState extends State<LoginPage> {
 
       await FirebaseAuth.instance.signInWithCredential(credential);
 
+      // Vérifie si la page est toujours montée
+      if (!mounted) return;
+
       // Animation de succès
       _showLoginAnimation();
 
-      // Redirection vers MainNavigationPage après 1.5s
-      Future.delayed(const Duration(milliseconds: 1500), () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-        );
-      });
+      // Attendre 1.5s puis naviguer en supprimant toutes les pages précédentes
+      await Future.delayed(const Duration(milliseconds: 1500));
+      if (!mounted) return;
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+        (route) => false, // <-- supprime tout l’historique
+      );
     } catch (error) {
+      if (!mounted) return;
       _showErrorSnackbar(error.toString());
       setState(() => _isLoading = false);
     }
