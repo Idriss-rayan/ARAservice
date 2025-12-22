@@ -1,4 +1,9 @@
 import 'package:araservice/auth/auth_gate.dart';
+import 'package:araservice/categories/mode_confession.dart';
+import 'package:araservice/categories/pressing_page.dart'
+    hide ModeConfectionPage;
+import 'package:araservice/categories/produits_menagers_page.dart';
+import 'package:araservice/categories/shopping_page.dart';
 import 'package:araservice/services/firebase_test.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -488,25 +493,32 @@ class HomeScreen extends StatelessWidget {
                     context,
                     'Shopping',
                     Icons.shopping_basket_rounded,
-                    const Color(0xFF2196F3),
+                    const [Color(0xFF1565C0), Color(0xFF2196F3)],
+                    0, // Passer l'index 0 pour Shopping
                   ),
+
                   _buildCategoryCard(
                     context,
                     'Produits ménagers',
                     Icons.clean_hands_rounded,
-                    const Color(0xFF00BCD4),
+                    const [Color(0xFF00838F), Color(0xFF00BCD4)],
+                    1, // Passer l'index
                   ),
+
                   _buildCategoryCard(
                     context,
                     'Mode & Confection',
                     Icons.content_cut_rounded,
-                    const Color(0xFF00695C),
+                    const [Color(0xFF004D40), Color(0xFF00695C)],
+                    2, // Passer l'index 2 pour Mode & Confection
                   ),
+
                   _buildCategoryCard(
                     context,
                     'Pressing',
                     Icons.local_laundry_service_rounded,
-                    const Color(0xFF4DB6AC),
+                    const [Color(0xFF00796B), Color(0xFF4DB6AC)],
+                    3, // Passer l'index 3 pour Pressing
                   ),
                 ],
               ),
@@ -669,43 +681,74 @@ class HomeScreen extends StatelessWidget {
     BuildContext context,
     String title,
     IconData icon,
-    Color color,
+    List<Color> gradientColors,
+    int index, // Ajouter l'index comme paramètre
   ) {
-    return Container(
-      height: 110, // Hauteur fixe pour éviter l'overflow
+    return SizedBox(
+      height: 110,
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            color: color.withOpacity(0.1),
+            gradient: LinearGradient(
+              colors: gradientColors,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
           ),
           child: InkWell(
             borderRadius: BorderRadius.circular(15),
             onTap: () {
-              // Naviguer vers la catégorie
+              final category =
+                  categories[index]; // index est maintenant disponible
+
+              Widget page;
+              switch (category.name) {
+                case 'Shopping':
+                  page = ShoppingPage(subcategories: category.subcategories);
+                  break;
+                case 'Produits ménagers':
+                  page = ProduitsMenagersPage(
+                    subcategories: category.subcategories,
+                  );
+                  break;
+                case 'Mode & Confection':
+                  page = ModeConfectionPage(
+                    subcategories: category.subcategories,
+                  );
+                  break;
+                case 'Pressing':
+                  page = PressingPage(subcategories: category.subcategories);
+                  break;
+                default:
+                  page = ShoppingPage(subcategories: category.subcategories);
+              }
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => page),
+              );
             },
             child: Padding(
-              padding: const EdgeInsets.all(12), // Padding réduit
+              padding: const EdgeInsets.all(12),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize:
-                    MainAxisSize.min, // Important pour éviter l'expansion
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(icon, size: 36, color: color), // Taille réduite
-                  const SizedBox(height: 8), // Espacement réduit
+                  Icon(icon, size: 36, color: Colors.white),
+                  const SizedBox(height: 8),
                   Text(
                     title,
-                    style: TextStyle(
-                      fontSize: 14, // Taille réduite
+                    style: const TextStyle(
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: color,
+                      color: Colors.white,
                     ),
                     textAlign: TextAlign.center,
-                    maxLines: 2, // Limite à 2 lignes
-                    overflow: TextOverflow
-                        .ellipsis, // Points de suspension si trop long
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
