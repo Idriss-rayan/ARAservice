@@ -507,18 +507,18 @@ class HomeScreen extends StatelessWidget {
 
                   _buildCategoryCard(
                     context,
-                    'Mode & Confection',
-                    Icons.content_cut_rounded,
-                    const [Color(0xFF004D40), Color(0xFF00695C)],
-                    2, // Passer l'index 2 pour Mode & Confection
+                    'Pressing',
+                    Icons.local_laundry_service_rounded,
+                    const [Color(0xFF00796B), Color(0xFF4DB6AC)],
+                    2,
                   ),
 
                   _buildCategoryCard(
                     context,
-                    'Pressing',
-                    Icons.local_laundry_service_rounded,
-                    const [Color(0xFF00796B), Color(0xFF4DB6AC)],
-                    3, // Passer l'index 3 pour Pressing
+                    'Mode & Confection',
+                    Icons.content_cut_rounded,
+                    const [Color(0xFF004D40), Color(0xFF00695C)],
+                    3,
                   ),
                 ],
               ),
