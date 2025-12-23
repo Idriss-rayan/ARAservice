@@ -389,267 +389,254 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FDFF),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header animé
-            Container(
-              height: 200,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: const [
-                    Color(0xFF004D40),
-                    Color(0xFF00695C),
-                    Color(0xFF4DB6AC),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF004D40).withOpacity(0.2),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
+      body: Column(
+        children: [
+          // Header animé
+          Container(
+            height: 200,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: const [
+                  Color(0xFF004D40),
+                  Color(0xFF00695C),
+                  Color(0xFF4DB6AC),
                 ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              child: Stack(
-                children: [
-                  // Effets de bulles
-                  ...List.generate(5, (index) {
-                    return Positioned(
-                      left: 20 + (index * 70) % screenWidth,
-                      top: 50 + (index * 20) % 100,
-                      child: Container(
-                        width: 40 + index * 10,
-                        height: 40 + index * 10,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.1),
-                        ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF004D40).withOpacity(0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                // Effets de bulles
+                ...List.generate(5, (index) {
+                  return Positioned(
+                    left: 20 + (index * 70) % screenWidth,
+                    top: 50 + (index * 20) % 100,
+                    child: Container(
+                      width: 40 + index * 10,
+                      height: 40 + index * 10,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.1),
                       ),
-                    ).animate().fadeIn(delay: (index * 200).ms);
-                  }),
-
-                  Padding(
-                    padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).padding.top + 20,
-                      left: 16,
-                      right: 16,
-                      bottom: 16,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            IconButton(
-                              onPressed: () => Navigator.pop(context),
-                              icon: Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                  Icons.arrow_back_ios_new_rounded,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                            const Spacer(),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
+                  ).animate().fadeIn(delay: (index * 200).ms);
+                }),
+
+                Padding(
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).padding.top + 20,
+                    left: 16,
+                    right: 16,
+                    bottom: 16,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: () => Navigator.pop(context),
+                            icon: Container(
+                              width: 44,
+                              height: 44,
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Row(
-                                children: [
-                                  Icon(
-                                    Icons.phone,
-                                    color: Colors.white,
-                                    size: 16,
-                                  ),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    'WhatsApp',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
+                              child: const Icon(
+                                Icons.arrow_back_ios_new_rounded,
+                                color: Colors.white,
+                                size: 20,
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Atelier de Couture',
-                          style: TextStyle(
-                            fontSize: isSmallScreen ? 28 : 32,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            letterSpacing: -0.5,
-                            height: 1.1,
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Sur mesure • Retouches • Prêt-à-porter',
-                          style: TextStyle(
-                            fontSize: isSmallScreen ? 14 : 16,
-                            color: Colors.white.withOpacity(0.9),
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Row(
+                              children: [
+                                Icon(
+                                  Icons.phone,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                                SizedBox(width: 6),
+                                Text(
+                                  'WhatsApp',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Atelier de Couture',
+                        style: TextStyle(
+                          fontSize: isSmallScreen ? 28 : 32,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: -0.5,
+                          height: 1.1,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
+              ],
+            ),
+          ),
+
+          // Onglets de navigation
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: widget.subcategories.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final category = entry.value;
+                  final isSelected = _selectedCategoryIndex == index;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedCategoryIndex = index;
+                          _selectedImages.clear();
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: 300.ms,
+                        constraints: BoxConstraints(
+                          minWidth: isSmallScreen ? 100 : 120,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: isSelected
+                              ? const LinearGradient(
+                                  colors: [
+                                    Color(0xFF004D40),
+                                    Color(0xFF00695C),
+                                  ],
+                                )
+                              : null,
+                          color: isSelected ? null : Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected
+                                ? Colors.transparent
+                                : Colors.grey.shade200,
+                          ),
+                        ),
+                        child: Text(
+                          category,
+                          style: TextStyle(
+                            fontSize: isSmallScreen ? 12 : 14,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected
+                                ? Colors.white
+                                : Colors.grey.shade700,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
             ),
+          ),
 
-            // Onglets de navigation
+          // Contenu principal avec SingleChildScrollView
+          Expanded(
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.all(8),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: screenHeight - 350),
+                child: _buildContent(screenWidth),
+              ),
+            ),
+          ),
+
+          // Bouton d'action
+          if (_formData.isNotEmpty || _selectedImages.isNotEmpty)
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
+                border: Border(top: BorderSide(color: Colors.grey.shade200)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, -5),
                   ),
                 ],
               ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: widget.subcategories.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final category = entry.value;
-                    final isSelected = _selectedCategoryIndex == index;
-
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedCategoryIndex = index;
-                            _selectedImages.clear();
-                          });
-                        },
-                        child: AnimatedContainer(
-                          duration: 300.ms,
-                          constraints: BoxConstraints(
-                            minWidth: isSmallScreen ? 100 : 120,
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: isSelected
-                                ? const LinearGradient(
-                                    colors: [
-                                      Color(0xFF004D40),
-                                      Color(0xFF00695C),
-                                    ],
-                                  )
-                                : null,
-                            color: isSelected ? null : Colors.grey.shade50,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: isSelected
-                                  ? Colors.transparent
-                                  : Colors.grey.shade200,
-                            ),
-                          ),
-                          child: Text(
-                            category,
-                            style: TextStyle(
-                              fontSize: isSmallScreen ? 12 : 14,
-                              fontWeight: FontWeight.w600,
-                              color: isSelected
-                                  ? Colors.white
-                                  : Colors.grey.shade700,
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
-
-            // Contenu principal avec SingleChildScrollView
-            Expanded(
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.all(16),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: screenHeight - 350),
-                  child: _buildContent(screenWidth),
-                ),
-              ),
-            ),
-
-            // Bouton d'action
-            if (_formData.isNotEmpty || _selectedImages.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border(top: BorderSide(color: Colors.grey.shade200)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 20,
-                      offset: const Offset(0, -5),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _sendToWhatsApp,
+                  icon: const Icon(Icons.phone, size: 24),
+                  label: const Text(
+                    'Envoyer sur WhatsApp',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF25D366),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
                     ),
-                  ],
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _sendToWhatsApp,
-                    icon: const Icon(Icons.phone, size: 24),
-                    label: const Text(
-                      'Envoyer sur WhatsApp',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF25D366),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      elevation: 0,
-                    ),
+                    elevation: 0,
                   ),
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
@@ -777,24 +764,24 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
                           color: Colors.grey.shade600,
                         ),
                       ),
-                      if (isSelected) ...[
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF004D40).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.check_rounded,
-                            color: Color(0xFF004D40),
-                            size: 16,
-                          ),
-                        ),
-                      ],
+                      // if (isSelected) ...[
+                      //   const SizedBox(height: 8),
+                      //   Container(
+                      //     padding: const EdgeInsets.symmetric(
+                      //       horizontal: 8,
+                      //       vertical: 4,
+                      //     ),
+                      //     decoration: BoxDecoration(
+                      //       color: const Color(0xFF004D40).withOpacity(0.1),
+                      //       borderRadius: BorderRadius.circular(10),
+                      //     ),
+                      //     child: const Icon(
+                      //       Icons.check_rounded,
+                      //       color: Color(0xFF004D40),
+                      //       size: 16,
+                      //     ),
+                      //   ),
+                      // ],
                     ],
                   ),
                 ),
