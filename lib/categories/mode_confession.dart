@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 
 class ModeConfectionPage extends StatefulWidget {
@@ -16,7 +17,7 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
   final Map<String, dynamic> _formData = {};
   final List<File> _selectedImages = [];
   final ImagePicker _picker = ImagePicker();
-  String _whatsappNumber = "+8801894689397";
+  String _whatsappNumber = "8801894689397";
 
   // Pour gérer le scroll
   final ScrollController _scrollController = ScrollController();
@@ -224,19 +225,142 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
     });
   }
 
-  void _sendToWhatsApp() {
-    final String message = _generateWhatsAppMessage();
-    final String encodedMessage = Uri.encodeFull(message);
-    final String whatsappUrl =
-        'https://wa.me/$_whatsappNumber?text=$encodedMessage';
+  Future<void> _sendToWhatsApp() async {
+    final message = _generateWhatsAppMessage();
+    final encodedMessage = Uri.encodeComponent(message);
 
-    // Ici, vous devrez utiliser un package comme url_launcher
-    // pour ouvrir le lien WhatsApp
-    print('WhatsApp URL: $whatsappUrl');
-    // Exemple avec url_launcher:
-    // launchUrl(Uri.parse(whatsappUrl));
+    final whatsappUrl = "https://wa.me/$_whatsappNumber?text=$encodedMessage";
 
-    _showConfirmationDialog();
+    try {
+      await launchUrl(
+        Uri.parse(whatsappUrl),
+        mode: LaunchMode.externalApplication,
+      );
+
+      setState(() {
+        _selectedImages.clear();
+        _formData.clear();
+        _formData['measurements'] = {
+          'bust': '',
+          'waist': '',
+          'hips': '',
+          'shoulder': '',
+          'arm_length': '',
+          'leg_length': '',
+          'height': '',
+        };
+      });
+
+      _showSuccessDialog();
+    } catch (e) {
+      _showErrorDialog("Impossible d'ouvrir WhatsApp");
+    }
+  }
+
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        contentPadding: const EdgeInsets.all(24),
+        title: Column(
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: const Color(0xFF25D366).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check_circle_rounded,
+                color: Color(0xFF25D366),
+                size: 40,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Message préparé !',
+              style: TextStyle(
+                color: Color(0xFF004D40),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'WhatsApp va s\'ouvrir avec votre message pré-rempli.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Étapes:',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF004D40),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children:
+                    const [
+                          Text('1. Vérifiez le message dans WhatsApp'),
+                          Text('2. Appuyez sur "Envoyer"'),
+                          Text('3. Notre équipe vous contactera'),
+                        ]
+                        .map(
+                          (text) => Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Row(
+                              children: [
+                                const Text('• '),
+                                Expanded(child: text),
+                              ],
+                            ),
+                          ),
+                        )
+                        .toList(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Compris'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Erreur',
+          style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700),
+        ),
+        content: Text(message, textAlign: TextAlign.center),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   String _generateWhatsAppMessage() {
