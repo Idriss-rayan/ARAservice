@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProduitsMenagersPage extends StatefulWidget {
   final List<String> subcategories;
@@ -68,7 +69,7 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage> {
   void _removeFromCart(String productName) {
     setState(() {
       if (_cart[productName] != null && _cart[productName]!['quantity'] > 1) {
-        _cart[productName]!['quantity'] = _cart[productName]!['quantity'] - 1;
+        _cart[productName]!['quantity'] -= 1;
       } else {
         _cart.remove(productName);
       }
@@ -81,6 +82,32 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage> {
       total += (product['price'] as double) * (product['quantity'] as int);
     }
     return total;
+  }
+
+  // --- Envoi de commande vers WhatsApp ---
+  void _sendOrderToWhatsApp() async {
+    if (_cart.isEmpty) return;
+
+    String message =
+        'Bonjour, je souhaite commander les produits suivants:\n\n';
+    _cart.forEach((name, product) {
+      message +=
+          '${name} - ${product['quantity']} x ${product['price']}€ = ${((product['quantity'] as int) * (product['price'] as double)).toStringAsFixed(2)}€\n';
+    });
+    message += '\nTotal: ${_getTotalPrice().toStringAsFixed(2)}€';
+
+    final encodedMessage = Uri.encodeComponent(message);
+    final whatsappUrl = Uri.parse(
+      "https://wa.me/<NUMERO>?text=$encodedMessage",
+    ); // Remplace <NUMERO> par ton numéro WhatsApp avec indicatif pays
+
+    if (await canLaunchUrl(whatsappUrl)) {
+      await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Impossible d'ouvrir WhatsApp")),
+      );
+    }
   }
 
   @override
@@ -160,11 +187,6 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage> {
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Nettoyage et entretien professionnel',
-                    style: TextStyle(fontSize: 16, color: Colors.white70),
-                  ),
                 ],
               ),
             ),
@@ -178,13 +200,8 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage> {
               children: widget.subcategories.asMap().entries.map((entry) {
                 final index = entry.key;
                 final category = entry.value;
-
                 return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedCategoryIndex = index;
-                    });
-                  },
+                  onTap: () => setState(() => _selectedCategoryIndex = index),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -217,8 +234,8 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage> {
               padding: const EdgeInsets.all(16),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
                 childAspectRatio: 0.8,
               ),
               itemCount: products.length,
@@ -250,7 +267,6 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage> {
                           ),
                         ),
                         const SizedBox(height: 12),
-
                         Text(
                           product['name'],
                           style: const TextStyle(
@@ -261,7 +277,6 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage> {
                           maxLines: 2,
                         ),
                         const SizedBox(height: 4),
-
                         Text(
                           product['description'],
                           style: const TextStyle(
@@ -270,8 +285,7 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage> {
                           ),
                           maxLines: 2,
                         ),
-                        const SizedBox(height: 8),
-
+                        const Spacer(),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -283,45 +297,52 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage> {
                                 color: Colors.black87,
                               ),
                             ),
-
+                            // Si le produit est dans le panier, afficher le contrôleur
                             if (inCart != null)
-                              Row(
-                                children: [
-                                  IconButton(
-                                    onPressed: () =>
-                                        _removeFromCart(product['name']),
-                                    icon: const Icon(
-                                      Icons.remove_circle_outline,
-                                      color: Colors.red,
-                                      size: 20,
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade200,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.remove_circle_outline,
+                                        color: Colors.red,
+                                        size: 20,
+                                      ),
+                                      onPressed: () =>
+                                          _removeFromCart(product['name']),
                                     ),
-                                  ),
-                                  Text(
-                                    '${inCart['quantity']}',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
+                                    Text(
+                                      '${inCart['quantity']}',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
-                                  ),
-                                  IconButton(
-                                    onPressed: () =>
-                                        _addToCart(product['name'], product),
-                                    icon: const Icon(
-                                      Icons.add_circle_outline,
-                                      color: Colors.green,
-                                      size: 20,
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.add_circle_outline,
+                                        color: Colors.green,
+                                        size: 20,
+                                      ),
+                                      onPressed: () =>
+                                          _addToCart(product['name'], product),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               )
                             else
+                              // Sinon, afficher juste le bouton "+"
                               ElevatedButton(
                                 onPressed: () =>
                                     _addToCart(product['name'], product),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF00838F),
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
+                                    horizontal: 10,
                                     vertical: 6,
                                   ),
                                   shape: RoundedRectangleBorder(
@@ -329,7 +350,7 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage> {
                                   ),
                                 ),
                                 child: const Text(
-                                  'Ajouter',
+                                  '+',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.white,
@@ -388,7 +409,7 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage> {
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: () => _showProductDetails(),
+                          onPressed: _showProductDetails,
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(color: Color(0xFF00838F)),
                             shape: RoundedRectangleBorder(
@@ -404,7 +425,7 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () => _placeOrder(),
+                          onPressed: () => _sendOrderToWhatsApp(),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF00838F),
                             shape: RoundedRectangleBorder(
@@ -412,7 +433,7 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage> {
                             ),
                           ),
                           child: const Text(
-                            'Commander',
+                            'Commander via WhatsApp',
                             style: TextStyle(color: Colors.white),
                           ),
                         ),
@@ -483,113 +504,6 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage> {
           Expanded(child: Text(text)),
         ],
       ),
-    );
-  }
-
-  void _placeOrder() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text(
-            'Commander',
-            style: TextStyle(color: Color(0xFF00838F)),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Voulez-vous commander ces produits ?'),
-              const SizedBox(height: 16),
-              ..._cart.entries.map((entry) {
-                final product = entry.value;
-                return ListTile(
-                  title: Text(entry.key),
-                  subtitle: Text(
-                    '${product['price']}€ × ${product['quantity']}',
-                  ),
-                  trailing: Text(
-                    '${((product['price'] as double) * (product['quantity'] as int)).toStringAsFixed(2)}€',
-                  ),
-                );
-              }),
-              Divider(color: Colors.grey.shade300),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Total:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    '${_getTotalPrice().toStringAsFixed(2)}€',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: Color(0xFF00838F),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _showOrderSuccess();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00838F),
-              ),
-              child: const Text('Confirmer'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showOrderSuccess() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.check_circle, size: 60, color: Colors.green),
-              const SizedBox(height: 20),
-              const Text(
-                'Commande confirmée !',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text('Votre commande sera livrée sous 24h.'),
-              const SizedBox(height: 16),
-              Text('Référence: CMD-${DateTime.now().millisecondsSinceEpoch}'),
-            ],
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                setState(() {
-                  _cart.clear();
-                });
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
     );
   }
 }
