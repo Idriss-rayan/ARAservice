@@ -1180,15 +1180,6 @@ class _ShoppingPageState extends State<ShoppingPage> {
                           height: 1,
                         ),
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Des produits de qualité supérieure',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
                     ],
                   ),
                 ),
