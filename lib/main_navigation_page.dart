@@ -650,30 +650,6 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      // Dans la méthode build de HomeScreen, après le Scaffold
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await FirebaseTest.checkFirebase();
-          await FirebaseTest.testFirestore();
-          await FirebaseTest.testAuth();
-
-          // Afficher une alerte de confirmation
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Firebase Test'),
-              content: const Text('Tests exécutés. Vérifie la console.'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-          );
-        },
-        child: const Icon(Icons.bug_report),
-      ),
     );
   }
 

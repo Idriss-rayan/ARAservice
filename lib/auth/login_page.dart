@@ -1,5 +1,6 @@
 import 'package:araservice/auth/register_page.dart';
 import 'package:araservice/main_navigation_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -36,9 +37,43 @@ class _LoginPageState extends State<LoginPage> {
         idToken: googleAuth.idToken,
       );
 
-      await FirebaseAuth.instance.signInWithCredential(credential);
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
 
-      // Vérifie si la page est toujours montée
+      final user = userCredential.user;
+      if (user == null) return;
+
+      // 1️⃣ Créer / mettre à jour le document Firestore pour cet utilisateur
+      final userRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid);
+
+      final doc = await userRef.get();
+      if (!doc.exists) {
+        // Nouveau utilisateur → création
+        await userRef.set({
+          'uid': user.uid,
+          'email': user.email ?? '',
+          'displayName': user.displayName ?? 'Utilisateur',
+          'photoURL': user.photoURL ?? '',
+          'phoneNumber': user.phoneNumber ?? '',
+          'createdAt': FieldValue.serverTimestamp(),
+          'lastLogin': FieldValue.serverTimestamp(),
+          'orderCount': 0,
+          'totalSpent': 0.0,
+        });
+      } else {
+        // Utilisateur existant → mise à jour du dernier login
+        await userRef.update({
+          'lastLogin': FieldValue.serverTimestamp(),
+          'displayName':
+              user.displayName ?? doc.data()?['displayName'] ?? 'Utilisateur',
+          'photoURL': user.photoURL ?? doc.data()?['photoURL'] ?? '',
+          'email': user.email ?? doc.data()?['email'] ?? '',
+        });
+      }
+
       if (!mounted) return;
 
       // Animation de succès
@@ -51,7 +86,7 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
-        (route) => false, // <-- supprime tout l’historique
+        (route) => false,
       );
     } catch (error) {
       if (!mounted) return;

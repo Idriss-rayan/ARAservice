@@ -1,3 +1,4 @@
+import 'package:araservice/services/firebase_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_picker/image_picker.dart';
@@ -227,16 +228,29 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
 
   Future<void> _sendToWhatsApp() async {
     final message = _generateWhatsAppMessage();
-    final encodedMessage = Uri.encodeComponent(message);
-
-    final whatsappUrl = "https://wa.me/$_whatsappNumber?text=$encodedMessage";
 
     try {
+      // 1️⃣ CRÉER LA COMMANDE DANS FIRESTORE
+      final orderService = OrderService();
+
+      await orderService.createOrder(
+        formData: _formData,
+        categoryIndex: _selectedCategoryIndex,
+        categories: widget.subcategories,
+        imagesCount: _selectedImages.length,
+        whatsappMessage: message,
+      );
+
+      // 2️⃣ OUVRIR WHATSAPP
+      final encodedMessage = Uri.encodeComponent(message);
+      final whatsappUrl = "https://wa.me/$_whatsappNumber?text=$encodedMessage";
+
       await launchUrl(
         Uri.parse(whatsappUrl),
         mode: LaunchMode.externalApplication,
       );
 
+      // 3️⃣ RESET DU FORMULAIRE
       setState(() {
         _selectedImages.clear();
         _formData.clear();
@@ -253,7 +267,7 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
 
       _showSuccessDialog();
     } catch (e) {
-      _showErrorDialog("Impossible d'ouvrir WhatsApp");
+      _showErrorDialog("Erreur lors de l'envoi de la commande");
     }
   }
 
