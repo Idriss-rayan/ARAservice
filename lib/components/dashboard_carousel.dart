@@ -19,8 +19,8 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
   void initState() {
     super.initState();
 
-    // Auto-slide toutes les 3 secondes
-    _timer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
+    // Auto-slide toutes les 5 secondes
+    _timer = Timer.periodic(const Duration(seconds: 5), (Timer timer) {
       if (_ads.isEmpty) return;
 
       _currentPage++;
@@ -28,7 +28,7 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
 
       _pageController.animateToPage(
         _currentPage,
-        duration: const Duration(milliseconds: 700),
+        duration: const Duration(milliseconds: 3000),
         curve: Curves.easeInOut,
       );
     });
