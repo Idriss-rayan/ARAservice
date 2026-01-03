@@ -2,6 +2,7 @@ import 'package:araservice/services/firebase_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 
@@ -230,7 +231,7 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
     final message = _generateWhatsAppMessage();
 
     try {
-      // 1️⃣ CRÉER LA COMMANDE DANS FIRESTORE
+      // 1️⃣ CRÉATION DE LA COMMANDE DANS FIRESTORE
       final orderService = OrderService();
 
       await orderService.createOrder(
@@ -241,14 +242,18 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
         whatsappMessage: message,
       );
 
-      // 2️⃣ OUVRIR WHATSAPP
-      final encodedMessage = Uri.encodeComponent(message);
-      final whatsappUrl = "https://wa.me/$_whatsappNumber?text=$encodedMessage";
+      // 2️⃣ PARTAGE WHATSAPP (texte + images)
+      if (_selectedImages.isEmpty) {
+        await Share.share(message, subject: "Nouvelle commande");
+      } else {
+        final xFiles = _selectedImages.map((file) => XFile(file.path)).toList();
 
-      await launchUrl(
-        Uri.parse(whatsappUrl),
-        mode: LaunchMode.externalApplication,
-      );
+        await Share.shareXFiles(
+          xFiles,
+          text: message,
+          subject: "Nouvelle commande",
+        );
+      }
 
       // 3️⃣ RESET DU FORMULAIRE
       setState(() {
@@ -267,7 +272,7 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
 
       _showSuccessDialog();
     } catch (e) {
-      _showErrorDialog("Erreur lors de l'envoi de la commande");
+      _showErrorDialog("Impossible d'envoyer la commande");
     }
   }
 

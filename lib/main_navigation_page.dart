@@ -4,6 +4,7 @@ import 'package:araservice/categories/pressing_page.dart'
     hide ModeConfectionPage;
 import 'package:araservice/categories/produits_menagers_page.dart';
 import 'package:araservice/categories/shopping_page.dart';
+import 'package:araservice/components/dashboard_welcome_container.dart';
 import 'package:araservice/services/firebase_test.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -394,80 +395,8 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Bannière de bienvenue
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF00695C), Color(0xFF4DB6AC)],
-                    stops: [0.0, 1.0],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF00695C).withOpacity(0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.spa_rounded,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Moi c est ARA, votre assistant personnel pour tous vos besoins de nettoyage, couture et service à domicile.',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
-                              fontSize: 14,
-                              fontStyle: FontStyle.italic,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Votre partenaire pour un quotidien impeccable',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        height: 1.3,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '(Nettoyer, coudre, servir)',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
+              DashboardWelcomeContainer(),
               const SizedBox(height: 28),
-
               // Catégories principales
               const Text(
                 'Catégories',
@@ -3654,18 +3583,8 @@ class CheckoutScreen extends StatelessWidget {
             Column(
               children: [
                 _buildPaymentMethod(
-                  icon: Icons.credit_card,
-                  title: 'Carte bancaire',
-                  isSelected: true,
-                ),
-                _buildPaymentMethod(
                   icon: Icons.money,
                   title: 'Espèces à la livraison',
-                  isSelected: false,
-                ),
-                _buildPaymentMethod(
-                  icon: Icons.mobile_friendly,
-                  title: 'Mobile Money',
                   isSelected: false,
                 ),
               ],
