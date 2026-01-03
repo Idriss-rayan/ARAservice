@@ -4,6 +4,7 @@ import 'package:araservice/categories/pressing_page.dart'
     hide ModeConfectionPage;
 import 'package:araservice/categories/produits_menagers_page.dart';
 import 'package:araservice/categories/shopping_page.dart';
+import 'package:araservice/components/dashboard_carousel.dart';
 import 'package:araservice/components/dashboard_welcome_container.dart';
 import 'package:araservice/services/firebase_test.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -395,7 +396,8 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Bannière de bienvenue
-              DashboardWelcomeContainer(),
+              //DashboardWelcomeContainer(),
+              DashboardCarousel(),
               const SizedBox(height: 28),
               // Catégories principales
               const Text(
