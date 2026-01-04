@@ -25,7 +25,7 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
   ];
 
   final List<Color> _highlightColors = [
-    const Color(0xFFE74C3C), // Rouge vif
+    const Color(0xFFE94C3C), // Rouge vif
     const Color(0xFF3498DB), // Bleu clair
     const Color(0xFF2ECC71), // Vert émeraude
     const Color(0xFFF39C12), // Orange
@@ -36,7 +36,7 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
   void initState() {
     super.initState();
 
-    _timer = Timer.periodic(const Duration(seconds: 15), (Timer timer) {
+    _timer = Timer.periodic(const Duration(seconds: 5), (Timer timer) {
       if (_ads.isEmpty) return;
 
       if (_pageController.hasClients) {
@@ -45,7 +45,7 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
 
         _pageController.animateToPage(
           _currentPage,
-          duration: const Duration(milliseconds: 600),
+          duration: const Duration(milliseconds: 5000),
           curve: Curves.easeInOut,
         );
       }
@@ -368,8 +368,6 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
-                                SizedBox(width: 8),
-                                Icon(Icons.arrow_forward_rounded, size: 16),
                               ],
                             ),
                           ),
