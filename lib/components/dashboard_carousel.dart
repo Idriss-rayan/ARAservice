@@ -799,36 +799,36 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
               ),
             ),
             // Indicateurs de points
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                _ads.length,
-                (index) => Container(
-                  width: _currentPage == index ? 12 : 8,
-                  height: _currentPage == index ? 12 : 8,
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _currentPage == index
-                        ? _highlightColors[index % _highlightColors.length]
-                        : Colors.grey.withOpacity(0.5),
-                    boxShadow: _currentPage == index
-                        ? [
-                            BoxShadow(
-                              color:
-                                  _highlightColors[index %
-                                          _highlightColors.length]
-                                      .withOpacity(0.5),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ]
-                        : null,
-                  ),
-                ),
-              ),
-            ),
+            // const SizedBox(height: 20),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.center,
+            //   children: List.generate(
+            //     _ads.length,
+            //     (index) => Container(
+            //       width: _currentPage == index ? 12 : 8,
+            //       height: _currentPage == index ? 12 : 8,
+            //       margin: const EdgeInsets.symmetric(horizontal: 4),
+            //       decoration: BoxDecoration(
+            //         shape: BoxShape.circle,
+            //         color: _currentPage == index
+            //             ? _highlightColors[index % _highlightColors.length]
+            //             : Colors.grey.withOpacity(0.5),
+            //         boxShadow: _currentPage == index
+            //             ? [
+            //                 BoxShadow(
+            //                   color:
+            //                       _highlightColors[index %
+            //                               _highlightColors.length]
+            //                           .withOpacity(0.5),
+            //                   blurRadius: 8,
+            //                   offset: const Offset(0, 2),
+            //                 ),
+            //               ]
+            //             : null,
+            //       ),
+            //     ),
+            //   ),
+            // ),
           ],
         );
       },
