@@ -627,7 +627,7 @@ class HomeScreen extends StatelessWidget {
                   );
                   break;
                 case 'Pressing':
-                  page = PressingPage(subcategories: category.subcategories);
+                  page = PressingPage(categoryName: category.name);
                   break;
                 default:
                   page = ShoppingPage(subcategories: category.subcategories);

@@ -1,39 +1,87 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class PressingPage extends StatefulWidget {
-  final List<String> subcategories;
-  const PressingPage({super.key, required this.subcategories});
+  final String categoryName;
+  const PressingPage({super.key, required this.categoryName});
 
   @override
-  State<PressingPage> createState() => _PressingPageState();
+  State<PressingPage> createState() => _PressingAdminPageState();
 }
 
-class _PressingPageState extends State<PressingPage> {
+class _PressingAdminPageState extends State<PressingPage> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   int _selectedServiceIndex = 0;
   final Map<String, int> _cart = {};
   bool _showPromo = true;
 
-  final Map<String, List<Map<String, dynamic>>> _services = {
-    'Nettoyage à sec': [
-      {'name': 'Costume complet', 'price': 25.99, 'duration': '24h'},
-      {'name': 'Robe de soirée', 'price': 34.99, 'duration': '48h'},
-      {'name': 'Manteau d\'hiver', 'price': 29.99, 'duration': '24h'},
-      {'name': 'Veste en cuir', 'price': 39.99, 'duration': '72h'},
-    ],
-    'Repassage': [
-      {'name': 'Chemise homme', 'price': 5.99, 'duration': '12h'},
-      {'name': 'Pantalon droit', 'price': 6.99, 'duration': '12h'},
-      {'name': 'Robe légère', 'price': 8.99, 'duration': '24h'},
-      {'name': 'Nappe 6 couverts', 'price': 12.99, 'duration': '24h'},
-    ],
-    'Retouches': [
-      {'name': 'Ourlet pantalon', 'price': 9.99, 'duration': '48h'},
-      {'name': 'Fermeture éclair', 'price': 14.99, 'duration': '24h'},
-      {'name': 'Reprise tissu', 'price': 19.99, 'duration': '72h'},
-      {'name': 'Boutonnière', 'price': 4.99, 'duration': '12h'},
-    ],
-  };
+  List<String> _subcategories = [];
+  Map<String, List<Map<String, dynamic>>> _services = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadServices();
+  }
+
+  Future<void> _loadServices() async {
+    try {
+      // Récupérer les services depuis Firestore
+      final servicesSnapshot = await _firestore
+          .collection('categories')
+          .doc(widget.categoryName)
+          .collection('services')
+          .get();
+
+      _subcategories = servicesSnapshot.docs.map((e) => e.id).toList();
+
+      // Pour chaque service, charger les items
+      _services = {};
+      for (final serviceName in _subcategories) {
+        final itemsSnapshot = await _firestore
+            .collection('categories')
+            .doc(widget.categoryName)
+            .collection('services')
+            .doc(serviceName)
+            .collection('items')
+            .get();
+
+        _services[serviceName] = itemsSnapshot.docs.map((doc) {
+          final data = doc.data();
+          return {
+            'name': data['name'] ?? 'Sans nom',
+            'price': (data['price'] as num?)?.toDouble() ?? 0.0,
+            'duration': data['duration'] ?? 'Non spécifié',
+            'id': doc.id,
+          };
+        }).toList();
+      }
+
+      setState(() {});
+    } catch (e) {
+      print('Erreur lors du chargement des données: $e');
+      // Données par défaut si erreur
+      _subcategories = ['Nettoyage à sec', 'Repassage', 'Retouches'];
+      _services = {
+        'Nettoyage à sec': [
+          {'name': 'Costume complet', 'price': 25.99, 'duration': '24h'},
+          {'name': 'Robe de soirée', 'price': 34.99, 'duration': '48h'},
+        ],
+        'Repassage': [
+          {'name': 'Chemise homme', 'price': 5.99, 'duration': '12h'},
+          {'name': 'Pantalon droit', 'price': 6.99, 'duration': '12h'},
+        ],
+        'Retouches': [
+          {'name': 'Ourlet pantalon', 'price': 9.99, 'duration': '48h'},
+          {'name': 'Fermeture éclair', 'price': 14.99, 'duration': '24h'},
+        ],
+      };
+      setState(() {});
+    }
+  }
 
   void _addToCart(String serviceName, String itemName, double price) {
     setState(() {
@@ -75,7 +123,30 @@ class _PressingPageState extends State<PressingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final currentService = widget.subcategories[_selectedServiceIndex];
+    if (_subcategories.isEmpty) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF8FDFF),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  const Color(0xFF00695C),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Chargement des services...',
+                style: TextStyle(color: const Color(0xFF00695C), fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final currentService = _subcategories[_selectedServiceIndex];
     final items = _services[currentService] ?? [];
 
     return Scaffold(
@@ -242,7 +313,7 @@ class _PressingPageState extends State<PressingPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Pressing Élégance',
+                            widget.categoryName,
                             style: TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.w900,
@@ -277,10 +348,10 @@ class _PressingPageState extends State<PressingPage> {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: widget.subcategories.length,
+              itemCount: _subcategories.length,
               itemBuilder: (context, index) {
                 final isSelected = _selectedServiceIndex == index;
-                final serviceName = widget.subcategories[index];
+                final serviceName = _subcategories[index];
 
                 return Padding(
                   padding: const EdgeInsets.only(right: 12),
@@ -422,199 +493,254 @@ class _PressingPageState extends State<PressingPage> {
 
                   // Liste des articles avec design élégant
                   Expanded(
-                    child: ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: items.length,
-                      itemBuilder: (context, index) {
-                        final item = items[index];
-                        final itemKey = '$currentService - ${item['name']}';
-                        final quantity = _cart[itemKey] ?? 0;
+                    child: items.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.cleaning_services_rounded,
+                                  size: 64,
+                                  color: Colors.grey.shade300,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Aucun article disponible',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: items.length,
+                            itemBuilder: (context, index) {
+                              final item = items[index];
+                              final itemKey =
+                                  '$currentService - ${item['name']}';
+                              final quantity = _cart[itemKey] ?? 0;
 
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          child:
-                              Material(
-                                    elevation: 4,
-                                    borderRadius: BorderRadius.circular(20),
-                                    color: Colors.white,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16),
-                                      child: Row(
-                                        children: [
-                                          // Cercle coloré avec icône
-                                          Container(
-                                            width: 60,
-                                            height: 60,
-                                            decoration: BoxDecoration(
-                                              gradient: LinearGradient(
-                                                colors: [
-                                                  const Color(0xFF00695C),
-                                                  const Color(0xFF4DB6AC),
-                                                ],
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                              ),
-                                              shape: BoxShape.circle,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: const Color(
-                                                    0xFF00695C,
-                                                  ).withOpacity(0.3),
-                                                  blurRadius: 10,
-                                                  offset: const Offset(0, 5),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Icon(
-                                              _getItemIcon(item['name']),
-                                              color: Colors.white,
-                                              size: 28,
-                                            ),
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                child:
+                                    Material(
+                                          elevation: 4,
+                                          borderRadius: BorderRadius.circular(
+                                            20,
                                           ),
-
-                                          const SizedBox(width: 16),
-
-                                          // Informations du produit
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                          color: Colors.white,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(16),
+                                            child: Row(
                                               children: [
-                                                Text(
-                                                  item['name'],
-                                                  style: const TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w700,
-                                                    color: Color(0xFF00695C),
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Row(
-                                                  children: [
-                                                    const Icon(
-                                                      Icons.timer_rounded,
-                                                      size: 14,
-                                                      color: Colors.grey,
-                                                    ),
-                                                    const SizedBox(width: 4),
-                                                    Text(
-                                                      item['duration'],
-                                                      style: const TextStyle(
-                                                        fontSize: 12,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                    const Spacer(),
-                                                    Text(
-                                                      '${item['price']}€',
-                                                      style: const TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        color: Colors.black87,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-
-                                          const SizedBox(width: 12),
-
-                                          // Contrôleur de quantité
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              gradient: quantity > 0
-                                                  ? LinearGradient(
+                                                // Cercle coloré avec icône
+                                                Container(
+                                                  width: 60,
+                                                  height: 60,
+                                                  decoration: BoxDecoration(
+                                                    gradient: LinearGradient(
                                                       colors: [
                                                         const Color(0xFF00695C),
                                                         const Color(0xFF4DB6AC),
                                                       ],
-                                                    )
-                                                  : null,
-                                              color: quantity > 0
-                                                  ? null
-                                                  : Colors.grey.shade100,
-                                              borderRadius:
-                                                  BorderRadius.circular(25),
-                                              border: Border.all(
-                                                color: quantity > 0
-                                                    ? Colors.transparent
-                                                    : Colors.grey.shade300,
-                                              ),
-                                            ),
-                                            child: quantity > 0
-                                                ? Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: [
-                                                      IconButton(
-                                                        onPressed: () =>
-                                                            _removeFromCart(
-                                                              itemKey,
-                                                            ),
-                                                        icon: const Icon(
-                                                          Icons.remove,
-                                                          color: Colors.white,
-                                                          size: 20,
+                                                      begin: Alignment.topLeft,
+                                                      end:
+                                                          Alignment.bottomRight,
+                                                    ),
+                                                    shape: BoxShape.circle,
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: const Color(
+                                                          0xFF00695C,
+                                                        ).withOpacity(0.3),
+                                                        blurRadius: 10,
+                                                        offset: const Offset(
+                                                          0,
+                                                          5,
                                                         ),
-                                                        padding:
-                                                            EdgeInsets.zero,
                                                       ),
+                                                    ],
+                                                  ),
+                                                  child: Icon(
+                                                    _getItemIcon(item['name']),
+                                                    color: Colors.white,
+                                                    size: 28,
+                                                  ),
+                                                ),
+
+                                                const SizedBox(width: 16),
+
+                                                // Informations du produit
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
                                                       Text(
-                                                        '$quantity',
+                                                        item['name'],
                                                         style: const TextStyle(
                                                           fontSize: 16,
                                                           fontWeight:
                                                               FontWeight.w700,
-                                                          color: Colors.white,
+                                                          color: Color(
+                                                            0xFF00695C,
+                                                          ),
                                                         ),
                                                       ),
-                                                      IconButton(
-                                                        onPressed: () =>
-                                                            _addToCart(
-                                                              currentService,
-                                                              item['name'],
-                                                              item['price']
-                                                                  as double,
-                                                            ),
-                                                        icon: const Icon(
-                                                          Icons.add,
-                                                          color: Colors.white,
-                                                          size: 20,
-                                                        ),
-                                                        padding:
-                                                            EdgeInsets.zero,
+                                                      const SizedBox(height: 4),
+                                                      Row(
+                                                        children: [
+                                                          const Icon(
+                                                            Icons.timer_rounded,
+                                                            size: 14,
+                                                            color: Colors.grey,
+                                                          ),
+                                                          const SizedBox(
+                                                            width: 4,
+                                                          ),
+                                                          Text(
+                                                            item['duration'],
+                                                            style:
+                                                                const TextStyle(
+                                                                  fontSize: 12,
+                                                                  color: Colors
+                                                                      .grey,
+                                                                ),
+                                                          ),
+                                                          const Spacer(),
+                                                          Text(
+                                                            '${item['price']}€',
+                                                            style:
+                                                                const TextStyle(
+                                                                  fontSize: 20,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w900,
+                                                                  color: Colors
+                                                                      .black87,
+                                                                ),
+                                                          ),
+                                                        ],
                                                       ),
                                                     ],
-                                                  )
-                                                : IconButton(
-                                                    onPressed: () => _addToCart(
-                                                      currentService,
-                                                      item['name'],
-                                                      item['price'] as double,
-                                                    ),
-                                                    icon: Icon(
-                                                      Icons
-                                                          .add_shopping_cart_rounded,
-                                                      color: const Color(
-                                                        0xFF00695C,
-                                                      ),
-                                                      size: 20,
+                                                  ),
+                                                ),
+
+                                                const SizedBox(width: 12),
+
+                                                // Contrôleur de quantité
+                                                Container(
+                                                  decoration: BoxDecoration(
+                                                    gradient: quantity > 0
+                                                        ? LinearGradient(
+                                                            colors: [
+                                                              const Color(
+                                                                0xFF00695C,
+                                                              ),
+                                                              const Color(
+                                                                0xFF4DB6AC,
+                                                              ),
+                                                            ],
+                                                          )
+                                                        : null,
+                                                    color: quantity > 0
+                                                        ? null
+                                                        : Colors.grey.shade100,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          25,
+                                                        ),
+                                                    border: Border.all(
+                                                      color: quantity > 0
+                                                          ? Colors.transparent
+                                                          : Colors
+                                                                .grey
+                                                                .shade300,
                                                     ),
                                                   ),
+                                                  child: quantity > 0
+                                                      ? Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: [
+                                                            IconButton(
+                                                              onPressed: () =>
+                                                                  _removeFromCart(
+                                                                    itemKey,
+                                                                  ),
+                                                              icon: const Icon(
+                                                                Icons.remove,
+                                                                color: Colors
+                                                                    .white,
+                                                                size: 20,
+                                                              ),
+                                                              padding:
+                                                                  EdgeInsets
+                                                                      .zero,
+                                                            ),
+                                                            Text(
+                                                              '$quantity',
+                                                              style: const TextStyle(
+                                                                fontSize: 16,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700,
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                            ),
+                                                            IconButton(
+                                                              onPressed: () =>
+                                                                  _addToCart(
+                                                                    currentService,
+                                                                    item['name'],
+                                                                    item['price']
+                                                                        as double,
+                                                                  ),
+                                                              icon: const Icon(
+                                                                Icons.add,
+                                                                color: Colors
+                                                                    .white,
+                                                                size: 20,
+                                                              ),
+                                                              padding:
+                                                                  EdgeInsets
+                                                                      .zero,
+                                                            ),
+                                                          ],
+                                                        )
+                                                      : IconButton(
+                                                          onPressed: () =>
+                                                              _addToCart(
+                                                                currentService,
+                                                                item['name'],
+                                                                item['price']
+                                                                    as double,
+                                                              ),
+                                                          icon: Icon(
+                                                            Icons
+                                                                .add_shopping_cart_rounded,
+                                                            color: const Color(
+                                                              0xFF00695C,
+                                                            ),
+                                                            size: 20,
+                                                          ),
+                                                        ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                  )
-                                  .animate()
-                                  .fadeIn(delay: (index * 100 + 400).ms)
-                                  .slideX(begin: 0.1, duration: 300.ms),
-                        );
-                      },
-                    ),
+                                        )
+                                        .animate()
+                                        .fadeIn(delay: (index * 100 + 400).ms)
+                                        .slideX(begin: 0.1, duration: 300.ms),
+                              );
+                            },
+                          ),
                   ),
 
                   // Résumé du panier
@@ -727,25 +853,39 @@ class _PressingPageState extends State<PressingPage> {
   }
 
   IconData _getServiceIcon(String serviceName) {
-    switch (serviceName) {
-      case 'Nettoyage à sec':
-        return Icons.cleaning_services_rounded;
-      case 'Repassage':
-        return Icons.iron_rounded;
-      case 'Retouches':
-        return Icons.content_cut_rounded;
-      default:
-        return Icons.local_laundry_service_rounded;
+    if (serviceName.contains('Nettoyage') ||
+        serviceName.contains('nettoyage')) {
+      return Icons.cleaning_services_rounded;
     }
+    if (serviceName.contains('Repassage') ||
+        serviceName.contains('repassage')) {
+      return Icons.iron_rounded;
+    }
+    if (serviceName.contains('Retouch') || serviceName.contains('retouch')) {
+      return Icons.content_cut_rounded;
+    }
+    return Icons.local_laundry_service_rounded;
   }
 
   IconData _getItemIcon(String itemName) {
-    if (itemName.contains('Costume')) return Icons.work_rounded;
-    if (itemName.contains('Robe')) return Icons.checkroom_rounded;
-    if (itemName.contains('Manteau')) return Icons.ac_unit_rounded;
-    if (itemName.contains('Chemise')) return Icons.man_rounded;
-    if (itemName.contains('Pantalon')) return Icons.dry_cleaning_rounded;
-    if (itemName.contains('Nappe')) return Icons.restaurant_rounded;
+    if (itemName.contains('Costume') || itemName.contains('costume')) {
+      return Icons.work_rounded;
+    }
+    if (itemName.contains('Robe') || itemName.contains('robe')) {
+      return Icons.checkroom_rounded;
+    }
+    if (itemName.contains('Manteau') || itemName.contains('manteau')) {
+      return Icons.ac_unit_rounded;
+    }
+    if (itemName.contains('Chemise') || itemName.contains('chemise')) {
+      return Icons.man_rounded;
+    }
+    if (itemName.contains('Pantalon') || itemName.contains('pantalon')) {
+      return Icons.dry_cleaning_rounded;
+    }
+    if (itemName.contains('Nappe') || itemName.contains('nappe')) {
+      return Icons.restaurant_rounded;
+    }
     return Icons.local_laundry_service_rounded;
   }
 

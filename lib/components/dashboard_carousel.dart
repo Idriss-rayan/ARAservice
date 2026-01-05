@@ -748,8 +748,9 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                                               color: Colors.white.withOpacity(
                                                 0.8,
                                               ),
-                                              fontSize: 12,
+                                              fontSize: 9,
                                               fontWeight: FontWeight.w600,
+                                              fontStyle: FontStyle.italic,
                                             ),
                                           ),
                                         ],
