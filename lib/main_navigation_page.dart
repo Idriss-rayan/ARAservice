@@ -164,7 +164,7 @@ final List<Category> categories = [
     id: '4',
     name: 'Mode & Confection',
     icon: Icons.content_cut,
-    subcategories: ['Confection sur mesure', 'Retouches', 'Prêt-à-porter'],
+    subcategories: ['Confection', 'Retouches', 'Prêt-à-porter'],
   ),
   Category(
     id: '5',
