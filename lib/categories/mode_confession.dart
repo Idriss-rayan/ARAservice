@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class ModeConfectionPage extends StatefulWidget {
   final List<String> subcategories;
@@ -19,172 +20,26 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
   final Map<String, dynamic> _formData = {};
   final List<File> _selectedImages = [];
   final ImagePicker _picker = ImagePicker();
-  String _whatsappNumber = "8801894689397";
+
+  // Firebase
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Pour gérer le scroll
   final ScrollController _scrollController = ScrollController();
 
-  // Modèles de vêtements populaires
-  final List<Map<String, dynamic>> _popularModels = [
-    {
-      'name': 'Boubou homme brodé',
-      'category': 'Homme',
-      'image': '👘',
-      'description': 'Boubou traditionnel avec broderies artisanales',
-      'price': '149.99€',
-      'time': '10 jours',
-    },
-    {
-      'name': 'Petit boubou',
-      'category': 'Homme',
-      'image': '👔',
-      'description': 'Boubou léger pour occasions décontractées',
-      'price': '89.99€',
-      'time': '7 jours',
-    },
-    {
-      'name': 'Ensemble tunique + pantalon',
-      'category': 'Femme',
-      'image': '👗',
-      'description': 'Ensemble élégant en tissu wax',
-      'price': '129.99€',
-      'time': '8 jours',
-    },
-    {
-      'name': 'Chemise wax + pantalon uni',
-      'category': 'Homme',
-      'image': '👕',
-      'description': 'Tenue moderne mixant wax et tissu uni',
-      'price': '119.99€',
-      'time': '7 jours',
-    },
-    {
-      'name': 'Tenue bazin homme',
-      'category': 'Homme',
-      'image': '🎩',
-      'description': 'Tenue de cérémonie en bazin riche',
-      'price': '199.99€',
-      'time': '12 jours',
-    },
-    {
-      'name': 'Costume africain modernisé',
-      'category': 'Homme',
-      'image': '🤵',
-      'description': 'Costume mixant coupes modernes et tissus africains',
-      'price': '229.99€',
-      'time': '14 jours',
-    },
-    {
-      'name': 'Robe longue wax',
-      'category': 'Femme',
-      'image': '💃',
-      'description': 'Robe élégante en wax imprimé',
-      'price': '139.99€',
-      'time': '9 jours',
-    },
-    {
-      'name': 'Robe pagne ajustée',
-      'category': 'Femme',
-      'image': '👚',
-      'description': 'Robe ajustée mettant en valeur la silhouette',
-      'price': '119.99€',
-      'time': '8 jours',
-    },
-    {
-      'name': 'Kaba (classique)',
-      'category': 'Femme',
-      'image': '🧥',
-      'description': 'Kaba traditionnel avec motifs africains',
-      'price': '159.99€',
-      'time': '10 jours',
-    },
-    {
-      'name': 'Kaba modernisée',
-      'category': 'Femme',
-      'image': '👘',
-      'description': 'Kaba revisité avec coupes contemporaines',
-      'price': '169.99€',
-      'time': '11 jours',
-    },
-  ];
+  // Données dynamiques
+  List<String> serviceNames = [];
+  int selectedServiceIndex = 0;
+  List<Map<String, dynamic>> _popularModels = [];
+  List<Map<String, dynamic>> _readyToWear = [];
+  bool _isLoading = true;
 
-  // Vêtements prêt-à-porter
-  final List<Map<String, dynamic>> _readyToWear = [
-    {
-      'name': 'Robe évasée (princesse)',
-      'category': 'Femme',
-      'image': '👗',
-      'size': ['S', 'M', 'L', 'XL'],
-      'price': '89.99€',
-      'stock': 'En stock',
-      'description':
-          'Robe évasée avec coupe princesse, idéale pour les occasions spéciales',
-    },
-    {
-      'name': 'Robe sirène',
-      'category': 'Femme',
-      'image': '🧜‍♀️',
-      'size': ['S', 'M', 'L'],
-      'price': '99.99€',
-      'stock': 'En stock',
-      'description':
-          'Robe sirène élégante qui épouse parfaitement la silhouette',
-    },
-    {
-      'name': 'Robe droite simple',
-      'category': 'Femme',
-      'image': '👚',
-      'size': ['XS', 'S', 'M', 'L', 'XL'],
-      'price': '69.99€',
-      'stock': 'En stock',
-      'description': 'Robe droite classique, parfaite pour le quotidien',
-    },
-    {
-      'name': 'Robe wax fendue',
-      'category': 'Femme',
-      'image': '💃',
-      'size': ['M', 'L', 'XL'],
-      'price': '119.99€',
-      'stock': 'En stock',
-      'description': 'Robe en wax avec fente latérale élégante',
-    },
-    {
-      'name': 'Ensemble deux-pièces wax',
-      'category': 'Femme',
-      'image': '👚👖',
-      'size': ['S', 'M', 'L'],
-      'price': '129.99€',
-      'stock': 'En stock',
-      'description': 'Ensemble coordonné en wax de qualité',
-    },
-    {
-      'name': 'Robe manche bouffante',
-      'category': 'Femme',
-      'image': '👗',
-      'size': ['S', 'M'],
-      'price': '109.99€',
-      'stock': 'En stock',
-      'description': 'Robe romantique avec manches bouffantes',
-    },
-    {
-      'name': 'Robe africaine de cérémonie',
-      'category': 'Femme',
-      'image': '👘',
-      'size': ['M', 'L', 'XL'],
-      'price': '179.99€',
-      'stock': 'En stock',
-      'description': 'Robe de cérémonie avec broderies traditionnelles',
-    },
-    {
-      'name': 'Tenue mixte wax + tissu uni',
-      'category': 'Mixte',
-      'image': '👕👖',
-      'size': ['S', 'M', 'L', 'XL'],
-      'price': '149.99€',
-      'stock': 'En stock',
-      'description': 'Tenue élégante combinant wax et tissu uni',
-    },
-  ];
+  // Correspondance entre les noms affichés et les noms Firebase
+  final Map<String, String> _firebaseCategoryMapping = {
+    'Confection sur mesure': 'Confection',
+    'Prêt-à-porter': 'Prêt-à-porter',
+    'Retouches': 'Retouches',
+  };
 
   @override
   void initState() {
@@ -199,12 +54,234 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
       'leg_length': '',
       'height': '',
     };
+
+    // Charger les données au démarrage
+    _loadServices();
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  // Obtenir le nom Firebase pour la catégorie
+  String _getFirebaseCategoryName() {
+    final displayedCategory = widget.subcategories[_selectedCategoryIndex];
+    return _firebaseCategoryMapping[displayedCategory] ?? displayedCategory;
+  }
+
+  // Charger les services depuis Firebase
+  Future<void> _loadServices() async {
+    setState(() {
+      _isLoading = true;
+      serviceNames = [];
+      _popularModels = [];
+      _readyToWear = [];
+    });
+
+    try {
+      // Si c'est Retouches, pas besoin de charger les services
+      if (_selectedCategoryIndex == 2) {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final firebaseCategory = _getFirebaseCategoryName();
+
+      print(
+        "Chargement des services pour Firebase catégorie: $firebaseCategory",
+      );
+      print(
+        "Catégorie affichée: ${widget.subcategories[_selectedCategoryIndex]}",
+      );
+
+      final snapshot = await _firestore
+          .collection('fashion')
+          .doc(firebaseCategory)
+          .collection('services')
+          .orderBy('createdAt')
+          .get();
+
+      print("Nombre de services trouvés: ${snapshot.docs.length}");
+
+      setState(() {
+        serviceNames = snapshot.docs.map((e) => e.id).toList();
+        print("Services chargés: $serviceNames");
+        if (serviceNames.isNotEmpty &&
+            selectedServiceIndex >= serviceNames.length) {
+          selectedServiceIndex = 0;
+        }
+      });
+
+      // Charger les articles selon la catégorie
+      if (_selectedCategoryIndex == 0) {
+        await _loadCustomTailoringItems();
+      } else if (_selectedCategoryIndex == 1) {
+        await _loadReadyToWearItems();
+      }
+    } catch (e) {
+      print('Erreur lors du chargement des services: $e');
+      print('Stack trace: ${e.toString()}');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Charger les articles pour la confection
+  Future<void> _loadCustomTailoringItems() async {
+    if (serviceNames.isEmpty) {
+      setState(() {
+        _popularModels = [];
+      });
+      return;
+    }
+
+    try {
+      final serviceName = serviceNames[selectedServiceIndex];
+      final firebaseCategory = _getFirebaseCategoryName();
+
+      print("Chargement des articles pour:");
+      print("  - Catégorie Firebase: $firebaseCategory");
+      print("  - Service: $serviceName");
+
+      final snapshot = await _firestore
+          .collection('fashion')
+          .doc(firebaseCategory)
+          .collection('services')
+          .doc(serviceName)
+          .collection('items')
+          .orderBy('createdAt')
+          .get();
+
+      print("Nombre d'articles trouvés: ${snapshot.docs.length}");
+
+      List<Map<String, dynamic>> models = [];
+      for (final doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        print("Article chargé: ${data['name']} - Prix: ${data['price']}");
+
+        models.add({
+          'id': doc.id,
+          'name': data['name'] ?? 'Sans nom',
+          'category': data['category'] ?? 'Non spécifié',
+          'description': data['description'] ?? '',
+          'price': data['price'] != null
+              ? _formatPrice(data['price'])
+              : '0.00 €',
+          'time': '7-14 jours',
+          'imageUrl': data['imageUrl'],
+          'originalData': data,
+        });
+      }
+
+      setState(() {
+        _popularModels = models;
+        print("${_popularModels.length} modèles chargés");
+      });
+    } catch (e) {
+      print('Erreur lors du chargement des articles: $e');
+      print('Stack trace: ${e.toString()}');
+      setState(() {
+        _popularModels = [];
+      });
+    }
+  }
+
+  // Charger les articles pour le prêt-à-porter
+  Future<void> _loadReadyToWearItems() async {
+    if (serviceNames.isEmpty) {
+      setState(() {
+        _readyToWear = [];
+      });
+      return;
+    }
+
+    try {
+      final serviceName = serviceNames[selectedServiceIndex];
+      final firebaseCategory = _getFirebaseCategoryName();
+
+      print("Chargement du prêt-à-porter pour:");
+      print("  - Catégorie Firebase: $firebaseCategory");
+      print("  - Service: $serviceName");
+
+      final snapshot = await _firestore
+          .collection('fashion')
+          .doc(firebaseCategory)
+          .collection('services')
+          .doc(serviceName)
+          .collection('items')
+          .orderBy('createdAt')
+          .get();
+
+      print("Nombre d'articles prêt-à-porter trouvés: ${snapshot.docs.length}");
+
+      List<Map<String, dynamic>> items = [];
+      for (final doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        print("Prêt-à-porter chargé: ${data['name']} - Prix: ${data['price']}");
+
+        // Gérer la taille (peut être une String ou une List)
+        List<String> sizes = [];
+        if (data['size'] != null) {
+          if (data['size'] is String) {
+            sizes = (data['size'] as String)
+                .split(',')
+                .map((s) => s.trim())
+                .toList();
+          } else if (data['size'] is List) {
+            sizes = List<String>.from(data['size']);
+          }
+        } else {
+          sizes = ['S', 'M', 'L'];
+        }
+
+        items.add({
+          'id': doc.id,
+          'name': data['name'] ?? 'Sans nom',
+          'category': data['category'] ?? 'Non spécifié',
+          'description': data['description'] ?? '',
+          'price': data['price'] != null
+              ? _formatPrice(data['price'])
+              : '0.00 €',
+          'stock': (data['available'] ?? true) ? 'En stock' : 'Rupture',
+          'size': sizes,
+          'imageUrl': data['imageUrl'],
+          'available': data['available'] ?? true,
+          'originalData': data,
+        });
+      }
+
+      setState(() {
+        _readyToWear = items;
+        print("${_readyToWear.length} articles prêt-à-porter chargés");
+      });
+    } catch (e) {
+      print('Erreur lors du chargement du prêt-à-porter: $e');
+      print('Stack trace: ${e.toString()}');
+      setState(() {
+        _readyToWear = [];
+      });
+    }
+  }
+
+  String _formatPrice(dynamic price) {
+    try {
+      if (price is String) {
+        final parsed = double.tryParse(price);
+        return '${parsed?.toStringAsFixed(2) ?? '0.00'} €';
+      } else if (price is int || price is double) {
+        return '${price.toStringAsFixed(2)} €';
+      }
+      return '0.00 €';
+    } catch (e) {
+      print('Erreur formatage prix: $e');
+      return '0.00 €';
+    }
   }
 
   Future<void> _pickImages() async {
@@ -393,6 +470,7 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
       message += "👕 MODÈLE CHOISI:\n";
       if (_formData['selected_model'] != null) {
         message += "• ${_formData['selected_model']['name']}\n";
+        message += "• Prix: ${_formData['selected_model']['price']}\n";
         message +=
             "• Description: ${_formData['selected_model']['description']}\n";
       }
@@ -409,6 +487,21 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
             "\n📝 NOTES SUPPLÉMENTAIRES:\n${_formData['additional_notes']}\n";
       }
     } else if (_selectedCategoryIndex == 1) {
+      // Prêt-à-porter
+      message += "🛒 COMMANDE PRÊT-À-PORTER:\n";
+      if (_formData['selected_item'] != null) {
+        message += "• Article: ${_formData['selected_item']['name']}\n";
+        message += "• Taille: ${_formData['selected_size']}\n";
+        message += "• Prix: ${_formData['selected_item']['price']}\n";
+        message +=
+            "• Description: ${_formData['selected_item']['description']}\n";
+      }
+      if (_formData['delivery_address'] != null &&
+          _formData['delivery_address'].isNotEmpty) {
+        message +=
+            "\n🏠 ADRESSE DE LIVRAISON:\n${_formData['delivery_address']}\n";
+      }
+    } else {
       // Retouches
       message += "✂️ INFORMATIONS RETOUCHES:\n";
       if (_formData['clothing_type'] != null &&
@@ -429,21 +522,6 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
             "\n📝 NOTES SUPPLÉMENTAIRES:\n${_formData['additional_notes']}\n";
       }
       message += "\n🖼️ NOMBRE DE PHOTOS: ${_selectedImages.length}\n";
-    } else {
-      // Prêt-à-porter
-      message += "🛒 COMMANDE PRÊT-À-PORTER:\n";
-      if (_formData['selected_item'] != null) {
-        message += "• Article: ${_formData['selected_item']['name']}\n";
-        message += "• Taille: ${_formData['selected_size']}\n";
-        message += "• Prix: ${_formData['selected_item']['price']}\n";
-        message +=
-            "• Description: ${_formData['selected_item']['description']}\n";
-      }
-      if (_formData['delivery_address'] != null &&
-          _formData['delivery_address'].isNotEmpty) {
-        message +=
-            "\n🏠 ADRESSE DE LIVRAISON:\n${_formData['delivery_address']}\n";
-      }
     }
 
     message += "\n📞 COORDONNÉES CLIENT:\n";
@@ -474,54 +552,6 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
       'height': 'Taille',
     };
     return labels[key] ?? key;
-  }
-
-  void _showConfirmationDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        contentPadding: const EdgeInsets.all(24),
-        title: Column(
-          children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: const Color(0xFF004D40).withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.check_circle_rounded,
-                color: Color(0xFF004D40),
-                size: 40,
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Demande envoyée !',
-              style: TextStyle(
-                color: Color(0xFF004D40),
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-        content: const Text(
-          'Votre demande a été préparée pour WhatsApp. '
-          'Ouvrez WhatsApp pour l\'envoyer à notre atelier.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.grey),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -681,7 +711,10 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
                         setState(() {
                           _selectedCategoryIndex = index;
                           _selectedImages.clear();
+                          selectedServiceIndex = 0;
+                          _isLoading = true;
                         });
+                        _loadServices();
                       },
                       child: AnimatedContainer(
                         duration: 300.ms,
@@ -730,17 +763,96 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
             ),
           ),
 
-          // Contenu principal avec SingleChildScrollView
-          Expanded(
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.all(8),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: screenHeight - 350),
-                child: _buildContent(screenWidth),
+          // Onglets des services (uniquement pour Confection et Prêt-à-porter)
+          if (_selectedCategoryIndex != 2 && serviceNames.isNotEmpty)
+            Container(
+              height: 60,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: serviceNames.length,
+                itemBuilder: (context, index) {
+                  final selected = index == selectedServiceIndex;
+                  return Padding(
+                    padding: const EdgeInsets.only(
+                      right: 8,
+                      top: 12,
+                      bottom: 12,
+                    ),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          selectedServiceIndex = index;
+                          _isLoading = true;
+                        });
+                        if (_selectedCategoryIndex == 0) {
+                          _loadCustomTailoringItems();
+                        } else {
+                          _loadReadyToWearItems();
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? const Color(0xFF4DB6AC)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: selected
+                                ? const Color(0xFF4DB6AC)
+                                : Colors.grey.shade300,
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          serviceNames[index],
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: selected
+                                ? Colors.white
+                                : Colors.grey.shade700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
+
+          // Contenu principal
+          Expanded(
+            child: _isLoading
+                ? _buildLoading()
+                : SingleChildScrollView(
+                    controller: _scrollController,
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.all(8),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: screenHeight - 350,
+                      ),
+                      child: _buildContent(screenWidth),
+                    ),
+                  ),
           ),
 
           // Bouton d'action
@@ -789,9 +901,9 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
       case 0:
         return _buildCustomTailoring(screenWidth);
       case 1:
-        return _buildRepairs(screenWidth);
-      case 2:
         return _buildReadyToWear(screenWidth);
+      case 2:
+        return _buildRepairs(screenWidth);
       default:
         return Container();
     }
@@ -806,7 +918,7 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
       children: [
         // Section modèles populaires
         const Text(
-          'Modèles populaires',
+          'Modèles disponibles',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
@@ -820,118 +932,184 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
         ),
         const SizedBox(height: 16),
 
-        // Grille des modèles adaptative
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 0.7,
-          ),
-          itemCount: _popularModels.length,
-          itemBuilder: (context, index) {
-            final model = _popularModels[index];
-            final isSelected = _formData['selected_model'] == model;
+        if (serviceNames.isEmpty)
+          _buildEmptyState(
+            'Aucun service disponible',
+            'Créez d\'abord des services dans l\'administration',
+          )
+        else if (_popularModels.isEmpty)
+          _buildEmptyState(
+            'Aucun modèle disponible',
+            'Ajoutez des articles dans ce service',
+          )
+        else
+          // Grille des modèles adaptative
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.7,
+            ),
+            itemCount: _popularModels.length,
+            itemBuilder: (context, index) {
+              final model = _popularModels[index];
+              final isSelected = _formData['selected_model'] == model;
 
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  _formData['selected_model'] = model;
-                });
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isSelected
-                        ? const Color(0xFF004D40)
-                        : Colors.grey.shade200,
-                    width: isSelected ? 2 : 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _formData['selected_model'] = model;
+                  });
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFF004D40)
+                          : Colors.grey.shade200,
+                      width: isSelected ? 2 : 1,
                     ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      // Image depuis Firebase
                       Container(
-                        width: 60,
-                        height: 60,
+                        height: 120,
+                        width: double.infinity,
                         decoration: BoxDecoration(
                           color: const Color(0xFFE0F2F1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Center(
-                          child: Text(
-                            model['image'],
-                            style: const TextStyle(fontSize: 32),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(16),
+                            topRight: Radius.circular(16),
                           ),
+                          image: model['imageUrl'] != null
+                              ? DecorationImage(
+                                  image: NetworkImage(model['imageUrl']!),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                        ),
+                        child: model['imageUrl'] == null
+                            ? Center(
+                                child: Icon(
+                                  Icons.photo,
+                                  size: 40,
+                                  color: const Color(
+                                    0xFF004D40,
+                                  ).withOpacity(0.5),
+                                ),
+                              )
+                            : null,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              model['name'],
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                                height: 1.3,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 6),
+                            if (model['category'] != null &&
+                                model['category'].isNotEmpty)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(
+                                    0xFF004D40,
+                                  ).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  model['category'],
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Color(0xFF004D40),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            const SizedBox(height: 8),
+                            Text(
+                              model['price'],
+                              style: const TextStyle(
+                                color: Color(0xFF004D40),
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              model['time'] ?? '7-14 jours',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            if (isSelected)
+                              Container(
+                                margin: const EdgeInsets.only(top: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(
+                                    0xFF004D40,
+                                  ).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.check_rounded,
+                                      color: Color(0xFF004D40),
+                                      size: 12,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Sélectionné',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Color(0xFF004D40),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        model['name'],
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                          height: 1.3,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        model['price'],
-                        style: const TextStyle(
-                          color: Color(0xFF004D40),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        model['time'],
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                      // if (isSelected) ...[
-                      //   const SizedBox(height: 8),
-                      //   Container(
-                      //     padding: const EdgeInsets.symmetric(
-                      //       horizontal: 8,
-                      //       vertical: 4,
-                      //     ),
-                      //     decoration: BoxDecoration(
-                      //       color: const Color(0xFF004D40).withOpacity(0.1),
-                      //       borderRadius: BorderRadius.circular(10),
-                      //     ),
-                      //     child: const Icon(
-                      //       Icons.check_rounded,
-                      //       color: Color(0xFF004D40),
-                      //       size: 16,
-                      //     ),
-                      //   ),
-                      // ],
                     ],
                   ),
                 ),
-              ),
-            );
-          },
-        ),
+              );
+            },
+          ),
 
         const SizedBox(height: 24),
 
@@ -1335,153 +1513,182 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
         ),
         const SizedBox(height: 16),
 
-        // Grille des vêtements adaptative
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 0.75,
-          ),
-          itemCount: _readyToWear.length,
-          itemBuilder: (context, index) {
-            final item = _readyToWear[index];
-            final isSelected = _formData['selected_item'] == item;
+        if (serviceNames.isEmpty)
+          _buildEmptyState(
+            'Aucun service disponible',
+            'Créez d\'abord des services dans l\'administration',
+          )
+        else if (_readyToWear.isEmpty)
+          _buildEmptyState(
+            'Aucun article disponible',
+            'Ajoutez des articles dans ce service',
+          )
+        else
+          // Grille des vêtements adaptative
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.75,
+            ),
+            itemCount: _readyToWear.length,
+            itemBuilder: (context, index) {
+              final item = _readyToWear[index];
+              final isSelected = _formData['selected_item'] == item;
 
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  _formData['selected_item'] = item;
-                  _showItemDetails(item);
-                });
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isSelected
-                        ? const Color(0xFF004D40)
-                        : Colors.grey.shade200,
-                    width: isSelected ? 2 : 1,
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _formData['selected_item'] = item;
+                    _showItemDetails(item);
+                  });
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFF004D40)
+                          : Colors.grey.shade200,
+                      width: isSelected ? 2 : 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE0F2F1),
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(16),
-                          topRight: Radius.circular(16),
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          item['image'],
-                          style: const TextStyle(fontSize: 40),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item['name'],
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12,
-                              height: 1.3,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Image depuis Firebase
+                      Container(
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE0F2F1),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(16),
+                            topRight: Radius.circular(16),
                           ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
+                          image: item['imageUrl'] != null
+                              ? DecorationImage(
+                                  image: NetworkImage(item['imageUrl']!),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                        ),
+                        child: item['imageUrl'] == null
+                            ? Center(
+                                child: Icon(
+                                  Icons.photo,
+                                  size: 40,
                                   color: const Color(
                                     0xFF004D40,
-                                  ).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(6),
+                                  ).withOpacity(0.5),
                                 ),
-                                child: Text(
-                                  item['category'],
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    color: const Color(0xFF004D40),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              const Spacer(),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.green.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  item['stock'],
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    color: Colors.green,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                item['price'],
-                                style: const TextStyle(
-                                  color: Color(0xFF004D40),
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              if (isSelected)
-                                const Icon(
-                                  Icons.check_circle_rounded,
-                                  color: Color(0xFF004D40),
-                                  size: 18,
-                                ),
-                            ],
-                          ),
-                        ],
+                              )
+                            : null,
                       ),
-                    ),
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item['name'],
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 12,
+                                height: 1.3,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                if (item['category'] != null &&
+                                    item['category'].isNotEmpty)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFF004D40,
+                                      ).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      item['category'],
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        color: const Color(0xFF004D40),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                const Spacer(),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: item['available'] == true
+                                        ? Colors.green.withOpacity(0.1)
+                                        : Colors.red.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    item['stock'],
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      color: item['available'] == true
+                                          ? Colors.green
+                                          : Colors.red,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  item['price'],
+                                  style: const TextStyle(
+                                    color: Color(0xFF004D40),
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                if (isSelected)
+                                  const Icon(
+                                    Icons.check_circle_rounded,
+                                    color: Color(0xFF004D40),
+                                    size: 18,
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
-        ),
+              );
+            },
+          ),
 
         // Section commande si article sélectionné
         if (_formData['selected_item'] != null) ...[
@@ -1618,13 +1825,22 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
                       decoration: BoxDecoration(
                         color: const Color(0xFFE0F2F1),
                         borderRadius: BorderRadius.circular(16),
+                        image: item['imageUrl'] != null
+                            ? DecorationImage(
+                                image: NetworkImage(item['imageUrl']!),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
                       ),
-                      child: Center(
-                        child: Text(
-                          item['image'],
-                          style: const TextStyle(fontSize: 60),
-                        ),
-                      ),
+                      child: item['imageUrl'] == null
+                          ? Center(
+                              child: Icon(
+                                Icons.photo,
+                                size: 40,
+                                color: const Color(0xFF004D40).withOpacity(0.5),
+                              ),
+                            )
+                          : null,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -1641,36 +1857,42 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF004D40).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          item['category'],
-                          style: const TextStyle(
-                            color: Color(0xFF004D40),
-                            fontWeight: FontWeight.w600,
+                      if (item['category'] != null &&
+                          item['category'].isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF004D40).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            item['category'],
+                            style: const TextStyle(
+                              color: Color(0xFF004D40),
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                      ),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
+                          color: item['available'] == true
+                              ? Colors.green.withOpacity(0.1)
+                              : Colors.red.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           item['stock'],
-                          style: const TextStyle(
-                            color: Colors.green,
+                          style: TextStyle(
+                            color: item['available'] == true
+                                ? Colors.green
+                                : Colors.red,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -1693,7 +1915,7 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    item['description'],
+                    item['description'] ?? 'Pas de description',
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey.shade700,
@@ -1750,6 +1972,72 @@ class _ModeConfectionPageState extends State<ModeConfectionPage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildEmptyState(String title, String subtitle) {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.inventory_2_outlined,
+            size: 60,
+            color: const Color(0xFF004D40).withOpacity(0.5),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF004D40),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            subtitle,
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoading() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF004D40)),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            _selectedCategoryIndex == 0
+                ? 'Chargement des modèles...'
+                : _selectedCategoryIndex == 1
+                ? 'Chargement des articles...'
+                : 'Chargement...',
+            style: const TextStyle(color: Color(0xFF004D40), fontSize: 16),
+          ),
+        ],
+      ),
     );
   }
 }
