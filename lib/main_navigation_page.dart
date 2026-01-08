@@ -566,7 +566,7 @@ class HomeScreen extends StatelessWidget {
               Widget page;
               switch (category.name) {
                 case 'Shopping':
-                  page = ShoppingPage(subcategories: category.subcategories);
+                  page = ShoppingSimplePage();
                   break;
                 case 'Produits ménagers':
                   page = ProduitsMenagersPage(
@@ -582,7 +582,7 @@ class HomeScreen extends StatelessWidget {
                   page = PressingPage(categoryName: category.name);
                   break;
                 default:
-                  page = ShoppingPage(subcategories: category.subcategories);
+                  page = ShoppingSimplePage();
               }
 
               Navigator.push(
