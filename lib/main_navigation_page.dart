@@ -195,11 +195,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     super.initState();
     _screens.addAll([
       HomeScreen(cartItems: cartItems),
-      const CategoriesScreen(),
       const SearchScreen(),
-      CartScreen(cartItems: cartItems),
       const AccountScreen(),
-      //RegisterPage(),
+      const CategoriesScreen(),
+      CartScreen(cartItems: cartItems),
     ]);
   }
 
@@ -265,18 +264,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 icon: Icon(Icons.home_rounded),
                 label: 'Accueil',
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.grid_view_rounded),
-                label: 'Catégories',
-              ),
+              // BottomNavigationBarItem(
+              //   icon: Icon(Icons.grid_view_rounded),
+              //   label: 'Catégories',
+              // ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.search_rounded),
                 label: 'Recherche',
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.shopping_cart_rounded),
-                label: 'Panier',
-              ),
+              // BottomNavigationBarItem(
+              //   icon: Icon(Icons.shopping_cart_rounded),
+              //   label: 'Panier',
+              // ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.person_rounded),
                 label: 'Compte',
@@ -2812,19 +2811,18 @@ class _AccountScreenState extends State<AccountScreen> {
                 isVerified: user.emailVerified,
               ),
 
-              if (user.phoneNumber != null)
-                _buildInfoTile(
-                  icon: Icons.phone_android_rounded,
-                  title: 'Téléphone',
-                  value: user.phoneNumber!,
-                ),
+              // if (user.phoneNumber != null)
+              //   _buildInfoTile(
+              //     icon: Icons.phone_android_rounded,
+              //     title: 'Téléphone',
+              //     value: user.phoneNumber!,
+              //   ),
 
-              _buildInfoTile(
-                icon: Icons.fingerprint_rounded,
-                title: 'Identifiant',
-                value: 'UID: ${user.uid.substring(0, 12)}...',
-              ),
-
+              // _buildInfoTile(
+              //   icon: Icons.fingerprint_rounded,
+              //   title: 'Identifiant',
+              //   value: 'UID: ${user.uid.substring(0, 12)}...',
+              // ),
               _buildInfoTile(
                 icon: Icons.calendar_month_rounded,
                 title: 'Compte créé',
@@ -2833,114 +2831,112 @@ class _AccountScreenState extends State<AccountScreen> {
                     : 'Date inconnue',
               ),
 
-              const SizedBox(height: 24),
+              //const SizedBox(height: 24),
 
-              // Section: Préférences
-              _buildSectionHeader(
-                icon: Icons.settings_outlined,
-                title: 'Préférences',
-              ),
-              const SizedBox(height: 12),
+              // // Section: Préférences
+              // _buildSectionHeader(
+              //   icon: Icons.settings_outlined,
+              //   title: 'Préférences',
+              // ),
+              // const SizedBox(height: 12),
 
-              _buildMenuItem(
-                icon: Icons.history_rounded,
-                title: 'Historique des commandes',
-                onTap: () {},
-              ),
+              // _buildMenuItem(
+              //   icon: Icons.history_rounded,
+              //   title: 'Historique des commandes',
+              //   onTap: () {},
+              // ),
 
-              _buildMenuItem(
-                icon: Icons.notifications_active_rounded,
-                title: 'Notifications',
-                onTap: () {},
-              ),
+              // _buildMenuItem(
+              //   icon: Icons.notifications_active_rounded,
+              //   title: 'Notifications',
+              //   onTap: () {},
+              // ),
 
-              _buildMenuItem(
-                icon: Icons.security_rounded,
-                title: 'Sécurité',
-                onTap: () {},
-              ),
+              // _buildMenuItem(
+              //   icon: Icons.security_rounded,
+              //   title: 'Sécurité',
+              //   onTap: () {},
+              // ),
 
-              _buildMenuItem(
-                icon: Icons.privacy_tip_rounded,
-                title: 'Confidentialité',
-                onTap: () {},
-              ),
+              // _buildMenuItem(
+              //   icon: Icons.privacy_tip_rounded,
+              //   title: 'Confidentialité',
+              //   onTap: () {},
+              // ),
 
-              _buildMenuItem(
-                icon: Icons.language_rounded,
-                title: 'Langue',
-                subtitle: 'Français',
-                onTap: () {},
-              ),
+              // _buildMenuItem(
+              //   icon: Icons.language_rounded,
+              //   title: 'Langue',
+              //   subtitle: 'Français',
+              //   onTap: () {},
+              // ),
 
-              _buildMenuItem(
-                icon: Icons.help_outline_rounded,
-                title: 'Centre d\'aide',
-                onTap: () {},
-              ),
-
+              // _buildMenuItem(
+              //   icon: Icons.help_outline_rounded,
+              //   title: 'Centre d\'aide',
+              //   onTap: () {},
+              // ),
               const SizedBox(height: 24),
 
               // Section: Actions
               _buildSectionHeader(icon: Icons.tune_rounded, title: 'Actions'),
               const SizedBox(height: 12),
 
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: const Color(0xFFE0E0E0),
-                    width: 1.5,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF4CAF50).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(
-                          Icons.upgrade_rounded,
-                          color: Color(0xFF4CAF50),
-                          size: 20,
-                        ),
-                      ),
-                      title: const Text(
-                        'Mettre à niveau le compte',
-                        style: TextStyle(
-                          color: Color(0xFF1A3C34),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      trailing: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF4CAF50).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Text(
-                          'PRO',
-                          style: TextStyle(
-                            color: Color(0xFF4CAF50),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
+              // Container(
+              //   decoration: BoxDecoration(
+              //     color: Colors.white,
+              //     borderRadius: BorderRadius.circular(14),
+              //     border: Border.all(
+              //       color: const Color(0xFFE0E0E0),
+              //       width: 1.5,
+              //     ),
+              //   ),
+              //   child: Column(
+              //     children: [
+              //       ListTile(
+              //         leading: Container(
+              //           width: 40,
+              //           height: 40,
+              //           decoration: BoxDecoration(
+              //             color: const Color(0xFF4CAF50).withOpacity(0.1),
+              //             borderRadius: BorderRadius.circular(10),
+              //           ),
+              //           child: const Icon(
+              //             Icons.upgrade_rounded,
+              //             color: Color(0xFF4CAF50),
+              //             size: 20,
+              //           ),
+              //         ),
+              //         title: const Text(
+              //           'Mettre à niveau le compte',
+              //           style: TextStyle(
+              //             color: Color(0xFF1A3C34),
+              //             fontSize: 15,
+              //             fontWeight: FontWeight.w500,
+              //           ),
+              //         ),
+              //         trailing: Container(
+              //           padding: const EdgeInsets.symmetric(
+              //             horizontal: 12,
+              //             vertical: 6,
+              //           ),
+              //           decoration: BoxDecoration(
+              //             color: const Color(0xFF4CAF50).withOpacity(0.1),
+              //             borderRadius: BorderRadius.circular(20),
+              //           ),
+              //           child: const Text(
+              //             'PRO',
+              //             style: TextStyle(
+              //               color: Color(0xFF4CAF50),
+              //               fontSize: 12,
+              //               fontWeight: FontWeight.w700,
+              //             ),
+              //           ),
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
               const SizedBox(height: 12),
 
               // Bouton Déconnexion
