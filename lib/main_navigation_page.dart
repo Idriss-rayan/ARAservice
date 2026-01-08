@@ -3157,11 +3157,6 @@ class _AccountScreenState extends State<AccountScreen> {
               ),
           ],
         ),
-        trailing: const Icon(
-          Icons.chevron_right_rounded,
-          color: Color(0xFF5A716B),
-          size: 20,
-        ),
       ),
     );
   }
