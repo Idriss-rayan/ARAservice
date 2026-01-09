@@ -47,7 +47,7 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage>
         curve: Curves.easeInOutCubic,
       ),
     );
-    _animationController.forward();
+    //_animationController.forward();
   }
 
   @override
@@ -63,9 +63,16 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage>
   }
 
   void _addToCart(String id, Map<String, dynamic> product) {
+    final wasEmpty = _cart.isEmpty;
+
     setState(() {
       _cart[id] = {...product, 'quantity': (_cart[id]?['quantity'] ?? 0) + 1};
     });
+
+    if (wasEmpty) {
+      _animationController.forward(from: 0);
+    }
+
     _showSnackBar(
       '${product['name']} ajouté au panier',
       Icons.check_circle,
@@ -147,9 +154,9 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage>
 🛒 *COMMANDE DE PRODUITS MÉNAGERS* 🛒
 
 📋 *Détails de la commande :*
-${_cart.entries.map((e) => '${e.value['quantity']}x ${e.value['name']} - ${e.value['price']}€').join('\n')}
+${_cart.entries.map((e) => '${e.value['quantity']}x ${e.value['name']} - ${e.value['price']}fr').join('\n')}
 
-💰 *Total : ${_getTotalPrice().toStringAsFixed(2)}€*
+💰 *Total : ${_getTotalPrice().toStringAsFixed(2)}fr*
 
 👤 *Informations client :*
 ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
@@ -175,13 +182,13 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
       _isExpanded = !_isExpanded;
     });
     if (_isExpanded) {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        );
-      });
+      // Future.delayed(const Duration(milliseconds: 100), () {
+      //   _scrollController.animateTo(
+      //     _scrollController.position.maxScrollExtent,
+      //     duration: const Duration(milliseconds: 500),
+      //     curve: Curves.easeInOut,
+      //   );
+      // });
     }
   }
 
@@ -349,7 +356,7 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                     ),
                                   ),
                                   Text(
-                                    '${_getTotalPrice().toStringAsFixed(2)}€',
+                                    '${_getTotalPrice().toStringAsFixed(2)}fr',
                                     style: const TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold,
@@ -451,7 +458,7 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                         child: SliverGrid(
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 1,
+                                crossAxisCount: 2,
                                 mainAxisSpacing: 15,
                                 crossAxisSpacing: 15,
                                 childAspectRatio: 0.75,
@@ -463,20 +470,10 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                             final doc = items[index];
                             final product = doc.data() as Map<String, dynamic>;
                             final inCart = _cart[doc.id];
-                            return AnimationConfiguration.staggeredGrid(
-                              position: index,
-                              duration: const Duration(milliseconds: 500),
-                              columnCount: 2,
-                              child: ScaleAnimation(
-                                scale: 0.5,
-                                child: FadeInAnimation(
-                                  child: _buildProductCard(
-                                    id: doc.id,
-                                    product: product,
-                                    inCart: inCart,
-                                  ),
-                                ),
-                              ),
+                            return _buildProductCard(
+                              id: doc.id,
+                              product: product,
+                              inCart: inCart,
                             );
                           }, childCount: items.length),
                         ),
@@ -698,7 +695,7 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                                               ),
                                                         ),
                                                         Text(
-                                                          '${item['price']}€ / unité',
+                                                          '${item['price']}fr / unité',
                                                           style: TextStyle(
                                                             fontSize: 12,
                                                             color: Colors
@@ -718,7 +715,7 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                                   ),
                                                   const SizedBox(width: 12),
                                                   Text(
-                                                    '${(item['price'] * item['quantity']).toStringAsFixed(2)}€',
+                                                    '${(item['price'] * item['quantity']).toStringAsFixed(2)}fr',
                                                     style: const TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
@@ -742,7 +739,7 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                                 ),
                                               ),
                                               Text(
-                                                '${_getTotalPrice().toStringAsFixed(2)}€',
+                                                '${_getTotalPrice().toStringAsFixed(2)}fr',
                                                 style: const TextStyle(
                                                   fontSize: 22,
                                                   fontWeight: FontWeight.bold,
@@ -972,7 +969,7 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                       ),
                                     ),
                                     Text(
-                                      '${item['price']}€ / unité',
+                                      '${item['price']}fr / unité',
                                       style: TextStyle(
                                         fontSize: 12,
                                         color: Colors.grey[600],
@@ -990,7 +987,7 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                               ),
                               const SizedBox(width: 12),
                               Text(
-                                '${(item['price'] * item['quantity']).toStringAsFixed(2)}€',
+                                '${(item['price'] * item['quantity']).toStringAsFixed(2)}fr',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -1012,7 +1009,7 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                             ),
                           ),
                           Text(
-                            '${_getTotalPrice().toStringAsFixed(2)}€',
+                            '${_getTotalPrice().toStringAsFixed(2)}fr',
                             style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
@@ -1222,119 +1219,129 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Prix avec largeur limitée
-                      Expanded(
-                        flex: 2,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '${product['price']?.toStringAsFixed(2) ?? '0.00'}€',
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF006064),
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                      // Prix réduit
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '${product['price']?.toStringAsFixed(2) ?? ''}fr',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF006064),
                             ),
-                            Text(
-                              'Prix',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.grey.shade500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      // Contrôle de quantité avec largeur limitée
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                            vertical: 4,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          decoration: BoxDecoration(
+                          Text(
+                            'Prix',
+                            style: TextStyle(
+                              fontSize: 9,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // Contrôle de quantité ultra compact
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 2,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: inCart == null
+                              ? Colors.transparent
+                              : const Color(0xFF006064).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(
                             color: inCart == null
                                 ? Colors.transparent
-                                : const Color(0xFF006064).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(50),
-                            border: Border.all(
-                              color: inCart == null
-                                  ? Colors.transparent
-                                  : const Color(0xFF006064),
-                              width: inCart == null ? 0 : 1.5,
-                            ),
+                                : const Color(0xFF006064),
+                            width: inCart == null ? 0 : 1.0,
                           ),
-                          child: inCart == null
-                              ? InkWell(
-                                  onTap: () => _addToCart(id, product),
-                                  borderRadius: BorderRadius.circular(50),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          const Color(0xFF006064),
-                                          const Color(0xFF00838F),
-                                        ],
-                                      ),
-                                      shape: BoxShape.circle,
+                        ),
+                        child: inCart == null
+                            ? GestureDetector(
+                                onTap: () => _addToCart(id, product),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        const Color(0xFF006064),
+                                        const Color(0xFF00838F),
+                                      ],
                                     ),
-                                    child: const Icon(
-                                      Icons.add_shopping_cart_rounded,
-                                      color: Colors.white,
-                                      size: 18,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.add_shopping_cart_rounded,
+                                    color: Colors.white,
+                                    size: 14,
+                                  ),
+                                ),
+                              )
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  GestureDetector(
+                                    onTap: () => _removeFromCart(id),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(
+                                          0xFF006064,
+                                        ).withOpacity(0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.remove_rounded,
+                                        size: 12,
+                                        color: const Color(
+                                          0xFF006064,
+                                        ).withOpacity(0.8),
+                                      ),
                                     ),
                                   ),
-                                )
-                              : Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    IconButton(
-                                      onPressed: () => _removeFromCart(id),
-                                      icon: Icon(
-                                        Icons.remove_rounded,
-                                        size: 16,
-                                        color: const Color(
-                                          0xFF006064,
-                                        ).withOpacity(0.8),
-                                      ),
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
+
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
+                                    child: Text(
+                                      '${inCart['quantity']}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                        color: Color(0xFF006064),
                                       ),
-                                      child: Text(
-                                        '${inCart['quantity']}',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                          color: Color(0xFF006064),
+                                    ),
+                                  ),
+
+                                  GestureDetector(
+                                    onTap: () => _addToCart(id, product),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(2),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            const Color(0xFF006064),
+                                            const Color(0xFF00838F),
+                                          ],
                                         ),
+                                        shape: BoxShape.circle,
                                       ),
-                                    ),
-                                    IconButton(
-                                      onPressed: () => _addToCart(id, product),
-                                      icon: Icon(
+                                      child: const Icon(
                                         Icons.add_rounded,
-                                        size: 16,
-                                        color: const Color(
-                                          0xFF006064,
-                                        ).withOpacity(0.8),
+                                        size: 12,
+                                        color: Colors.white,
                                       ),
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
                                     ),
-                                  ],
-                                ),
-                        ),
+                                  ),
+                                ],
+                              ),
                       ),
                     ],
                   ),

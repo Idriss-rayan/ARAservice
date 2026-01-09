@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:share_plus/share_plus.dart'; // Ajout du package share_plus
 
 class ShoppingSimplePage extends StatefulWidget {
   const ShoppingSimplePage({super.key});
@@ -119,6 +120,48 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
     });
   }
 
+  // Nouvelle fonction pour partager la commande sur WhatsApp
+  Future<void> _shareOrderOnWhatsApp() async {
+    if (_cartItems.isEmpty) return;
+
+    final StringBuffer orderMessage = StringBuffer();
+    orderMessage.write('📋 *COMMANDE ARA SHOPPING*\n\n');
+    orderMessage.write('--------------------------------\n\n');
+
+    for (var item in _cartItems) {
+      orderMessage.write('• *${item.name}*\n');
+      orderMessage.write('  Quantité: ${item.quantity}\n');
+      orderMessage.write(
+        '  Prix unitaire: ${item.price.toStringAsFixed(0)} fcfa\n',
+      );
+      orderMessage.write(
+        '  Sous-total: ${item.total.toStringAsFixed(0)} fcfa\n\n',
+      );
+    }
+
+    orderMessage.write('--------------------------------\n');
+    orderMessage.write(
+      '*TOTAL GÉNÉRAL: ${_calculateTotal().toStringAsFixed(0)} fcfa*\n\n',
+    );
+    orderMessage.write('🛒 Nombre d\'articles: ${_calculateTotalItems()}\n\n');
+    orderMessage.write('Merci pour votre commande ! 😊');
+
+    try {
+      await Share.share(
+        orderMessage.toString(),
+        subject: 'Commande ARA Shopping',
+        sharePositionOrigin: Rect.fromCenter(
+          center: MediaQuery.of(context).size.center(Offset.zero),
+          width: 100,
+          height: 100,
+        ),
+      );
+    } catch (e) {
+      print('Erreur lors du partage: $e');
+      _showSnackbar('Erreur lors du partage');
+    }
+  }
+
   void _showOrderConfirmation() {
     if (_cartItems.isEmpty) return;
 
@@ -171,6 +214,12 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
                 ],
               ),
             ),
+            const SizedBox(height: 15),
+            const Text(
+              'Souhaitez-vous partager cette commande sur WhatsApp ?',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
           ],
         ),
         actions: [
@@ -179,26 +228,41 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
               Expanded(
                 child: TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'Continuer',
-                    style: TextStyle(color: Colors.grey),
-                  ),
+                  style: TextButton.styleFrom(foregroundColor: Colors.grey),
+                  child: const Text('Annuler'),
                 ),
               ),
+              const SizedBox(width: 10),
               Expanded(
-                child: ElevatedButton(
+                child: ElevatedButton.icon(
                   onPressed: () {
                     Navigator.pop(context);
-                    _clearCart();
+                    _shareOrderOnWhatsApp();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1565C0),
+                    backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
                   ),
-                  child: const Text('Fermer'),
+                  icon: const Icon(Icons.phone, size: 20),
+                  label: const Text('WhatsApp'),
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _clearCart();
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF1565C0),
+                side: const BorderSide(color: Color(0xFF1565C0)),
+              ),
+              child: const Text('Terminer sans partager'),
+            ),
           ),
         ],
       ),
@@ -358,7 +422,9 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
       right: 0,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        height: _cartItems.isEmpty ? 100 : 250,
+        height: _cartItems.isEmpty
+            ? 100
+            : 280, // Ajusté pour le bouton WhatsApp
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -531,42 +597,68 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
                     top: BorderSide(color: Colors.grey, width: 0.5),
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Total',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Total',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            Text(
+                              '${_calculateTotal().toStringAsFixed(0)} fcfa',
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1565C0),
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          '${_calculateTotal().toStringAsFixed(0)} fcfa',
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1565C0),
+                        ElevatedButton.icon(
+                          onPressed: _showOrderConfirmation,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                          ),
+                          icon: const Icon(Icons.phone, size: 20),
+                          label: const Text(
+                            'Commander',
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],
                     ),
-                    ElevatedButton(
-                      onPressed: _showOrderConfirmation,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1565C0),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _showOrderConfirmation,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1565C0),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                        child: const Text(
+                          'Voir options de commande',
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                      ),
-                      child: const Text(
-                        'Commander',
-                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],

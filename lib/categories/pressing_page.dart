@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:share_plus/share_plus.dart';
 
 class PressingPage extends StatefulWidget {
   final String categoryName;
@@ -13,6 +15,9 @@ class PressingPage extends StatefulWidget {
 
 class _PressingAdminPageState extends State<PressingPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  User? _currentUser;
+  String? _userName;
 
   int _selectedServiceIndex = 0;
   final Map<String, int> _cart = {};
@@ -24,12 +29,25 @@ class _PressingAdminPageState extends State<PressingPage> {
   @override
   void initState() {
     super.initState();
+    _loadCurrentUser();
     _loadServices();
+  }
+
+  Future<void> _loadCurrentUser() async {
+    try {
+      _currentUser = _auth.currentUser;
+      if (_currentUser != null) {
+        _userName = _currentUser!.displayName;
+        setState(() {});
+        print('Nom utilisateur récupéré: $_userName');
+      }
+    } catch (e) {
+      print('Erreur lors de la récupération de l\'utilisateur: $e');
+    }
   }
 
   Future<void> _loadServices() async {
     try {
-      // Récupérer les services depuis Firestore
       final servicesSnapshot = await _firestore
           .collection('categories')
           .doc(widget.categoryName)
@@ -38,7 +56,6 @@ class _PressingAdminPageState extends State<PressingPage> {
 
       _subcategories = servicesSnapshot.docs.map((e) => e.id).toList();
 
-      // Pour chaque service, charger les items
       _services = {};
       for (final serviceName in _subcategories) {
         final itemsSnapshot = await _firestore
@@ -63,7 +80,6 @@ class _PressingAdminPageState extends State<PressingPage> {
       setState(() {});
     } catch (e) {
       print('Erreur lors du chargement des données: $e');
-      // Données par défaut si erreur
       _subcategories = ['Nettoyage à sec', 'Repassage', 'Retouches'];
       _services = {
         'Nettoyage à sec': [
@@ -81,6 +97,204 @@ class _PressingAdminPageState extends State<PressingPage> {
       };
       setState(() {});
     }
+  }
+
+  Future<void> _sendToWhatsApp() async {
+    try {
+      String userName = _userName ?? 'Client';
+
+      String message = '🛒 *COMMANDE PRESSING* 🛒\n\n';
+      message += '*Client:* $userName\n';
+      message += '*Date:* ${DateTime.now().toString().split(' ')[0]}\n';
+      message += '*Service:* ${widget.categoryName}\n\n';
+      message += '*📋 Détails de la commande:*\n';
+
+      double total = 0;
+      int itemCount = 0;
+
+      for (var entry in _cart.entries) {
+        final parts = entry.key.split(' - ');
+        final serviceName = parts[0];
+        final itemName = parts[1];
+
+        final item = _services[serviceName]?.firstWhere(
+          (item) => item['name'] == itemName,
+          orElse: () => {'price': 0.0, 'duration': ''},
+        );
+
+        double price = (item?['price'] ?? 0.0) as double;
+        double itemTotal = price * entry.value;
+        total += itemTotal;
+        itemCount += entry.value;
+
+        message += '• ${entry.value}x $itemName\n';
+        message += '  Prix unitaire: ${price} fr\n';
+        message += '  Durée: ${item?['duration']}\n';
+        message += '  Sous-total: ${itemTotal.toStringAsFixed(2)} fr\n\n';
+      }
+
+      message += '*📊 Récapitulatif:*\n';
+      message += 'Articles: $itemCount\n';
+      message += 'Total: ${total.toStringAsFixed(2)} fr\n';
+
+      if (_showPromo) {
+        double promoPrice = total * 0.8;
+        message += 'Promotion -20%: ${promoPrice.toStringAsFixed(2)} fr\n';
+        message += '*💰 Prix final: ${promoPrice.toStringAsFixed(2)} fr*';
+      } else {
+        message += '*💰 Prix final: ${total.toStringAsFixed(2)} fr*';
+      }
+
+      message += '\n\n📍 *Informations de livraison:*\n';
+      message += '• Collecte à domicile sous 24h\n';
+      message += '• Livraison en 24-48h\n';
+      message += '• Paiement à la livraison\n\n';
+      message += 'Merci pour votre confiance ! 🎉';
+
+      print('Message WhatsApp prêt à être envoyé:\n$message');
+
+      await Share.share(
+        message,
+        subject: 'Commande Pressing - $userName',
+        sharePositionOrigin: Rect.fromLTWH(0, 0, 100, 100),
+      );
+
+      print('Message partagé avec succès!');
+    } catch (e) {
+      print('Erreur lors de l\'envoi vers WhatsApp: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur d\'envoi: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _validateOrder(BuildContext context) {
+    _sendToWhatsApp()
+        .then((_) {
+          _showConfirmationDialog(context);
+        })
+        .catchError((error) {
+          print('Erreur WhatsApp mais confirmation montrée: $error');
+          _showConfirmationDialog(context);
+        });
+  }
+
+  void _showConfirmationDialog(BuildContext context) {
+    String userName = _userName ?? 'Client';
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: const [Color(0xFF00695C), Color(0xFF4DB6AC)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 40,
+                  offset: const Offset(0, 20),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check_rounded,
+                    color: Colors.white,
+                    size: 40,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Commande confirmée !',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Merci $userName ! Votre commande a été envoyée sur WhatsApp.\n\nVotre pressing sera collecté sous 24h.',
+                  style: const TextStyle(fontSize: 14, color: Colors.white70),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.phone,
+                        color: Color(0xFF25D366),
+                        size: 24,
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
+                        'Commande envoyée sur WhatsApp',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    setState(() {
+                      _cart.clear();
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF00695C),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40,
+                      vertical: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                  child: const Text(
+                    'Parfait !',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _addToCart(String serviceName, String itemName, double price) {
@@ -153,7 +367,6 @@ class _PressingAdminPageState extends State<PressingPage> {
       backgroundColor: const Color(0xFFF8FDFF),
       body: Column(
         children: [
-          // Header amélioré avec animations
           Container(
             height: 220,
             decoration: BoxDecoration(
@@ -181,7 +394,6 @@ class _PressingAdminPageState extends State<PressingPage> {
             ),
             child: Stack(
               children: [
-                // Effets décoratifs
                 Positioned(
                   top: -40,
                   right: -30,
@@ -342,7 +554,6 @@ class _PressingAdminPageState extends State<PressingPage> {
             ),
           ),
 
-          // Onglets de services interactifs
           Container(
             height: 80,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -423,13 +634,11 @@ class _PressingAdminPageState extends State<PressingPage> {
             ),
           ),
 
-          // Contenu principal
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 children: [
-                  // Statistiques rapides
                   Container(
                     margin: const EdgeInsets.only(bottom: 20),
                     padding: const EdgeInsets.all(16),
@@ -455,7 +664,6 @@ class _PressingAdminPageState extends State<PressingPage> {
                     ),
                   ).animate().fadeIn(delay: 200.ms),
 
-                  // Titre de section
                   Padding(
                     padding: const EdgeInsets.only(bottom: 16),
                     child: Row(
@@ -491,7 +699,6 @@ class _PressingAdminPageState extends State<PressingPage> {
                     ),
                   ).animate().fadeIn(delay: 300.ms),
 
-                  // Liste des articles avec design élégant
                   Expanded(
                     child: items.isEmpty
                         ? Center(
@@ -525,225 +732,183 @@ class _PressingAdminPageState extends State<PressingPage> {
 
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 16),
-                                child:
-                                    Material(
-                                          elevation: 4,
-                                          borderRadius: BorderRadius.circular(
-                                            20,
-                                          ),
-                                          color: Colors.white,
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(16),
-                                            child: Row(
-                                              children: [
-                                                // Cercle coloré avec icône
-                                                Container(
-                                                  width: 60,
-                                                  height: 60,
-                                                  decoration: BoxDecoration(
-                                                    gradient: LinearGradient(
-                                                      colors: [
-                                                        const Color(0xFF00695C),
-                                                        const Color(0xFF4DB6AC),
-                                                      ],
-                                                      begin: Alignment.topLeft,
-                                                      end:
-                                                          Alignment.bottomRight,
-                                                    ),
-                                                    shape: BoxShape.circle,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: const Color(
-                                                          0xFF00695C,
-                                                        ).withOpacity(0.3),
-                                                        blurRadius: 10,
-                                                        offset: const Offset(
-                                                          0,
-                                                          5,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  child: Icon(
-                                                    _getItemIcon(item['name']),
-                                                    color: Colors.white,
-                                                    size: 28,
-                                                  ),
-                                                ),
-
-                                                const SizedBox(width: 16),
-
-                                                // Informations du produit
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        item['name'],
-                                                        style: const TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                          color: Color(
-                                                            0xFF00695C,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      const SizedBox(height: 4),
-                                                      Row(
-                                                        children: [
-                                                          const Icon(
-                                                            Icons.timer_rounded,
-                                                            size: 14,
-                                                            color: Colors.grey,
-                                                          ),
-                                                          const SizedBox(
-                                                            width: 4,
-                                                          ),
-                                                          Text(
-                                                            item['duration'],
-                                                            style:
-                                                                const TextStyle(
-                                                                  fontSize: 12,
-                                                                  color: Colors
-                                                                      .grey,
-                                                                ),
-                                                          ),
-                                                          const Spacer(),
-                                                          Text(
-                                                            '${item['price']}€',
-                                                            style:
-                                                                const TextStyle(
-                                                                  fontSize: 20,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w900,
-                                                                  color: Colors
-                                                                      .black87,
-                                                                ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-
-                                                const SizedBox(width: 12),
-
-                                                // Contrôleur de quantité
-                                                Container(
-                                                  decoration: BoxDecoration(
-                                                    gradient: quantity > 0
-                                                        ? LinearGradient(
-                                                            colors: [
-                                                              const Color(
-                                                                0xFF00695C,
-                                                              ),
-                                                              const Color(
-                                                                0xFF4DB6AC,
-                                                              ),
-                                                            ],
-                                                          )
-                                                        : null,
-                                                    color: quantity > 0
-                                                        ? null
-                                                        : Colors.grey.shade100,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          25,
-                                                        ),
-                                                    border: Border.all(
-                                                      color: quantity > 0
-                                                          ? Colors.transparent
-                                                          : Colors
-                                                                .grey
-                                                                .shade300,
-                                                    ),
-                                                  ),
-                                                  child: quantity > 0
-                                                      ? Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.min,
-                                                          children: [
-                                                            IconButton(
-                                                              onPressed: () =>
-                                                                  _removeFromCart(
-                                                                    itemKey,
-                                                                  ),
-                                                              icon: const Icon(
-                                                                Icons.remove,
-                                                                color: Colors
-                                                                    .white,
-                                                                size: 20,
-                                                              ),
-                                                              padding:
-                                                                  EdgeInsets
-                                                                      .zero,
-                                                            ),
-                                                            Text(
-                                                              '$quantity',
-                                                              style: const TextStyle(
-                                                                fontSize: 16,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w700,
-                                                                color: Colors
-                                                                    .white,
-                                                              ),
-                                                            ),
-                                                            IconButton(
-                                                              onPressed: () =>
-                                                                  _addToCart(
-                                                                    currentService,
-                                                                    item['name'],
-                                                                    item['price']
-                                                                        as double,
-                                                                  ),
-                                                              icon: const Icon(
-                                                                Icons.add,
-                                                                color: Colors
-                                                                    .white,
-                                                                size: 20,
-                                                              ),
-                                                              padding:
-                                                                  EdgeInsets
-                                                                      .zero,
-                                                            ),
-                                                          ],
-                                                        )
-                                                      : IconButton(
-                                                          onPressed: () =>
-                                                              _addToCart(
-                                                                currentService,
-                                                                item['name'],
-                                                                item['price']
-                                                                    as double,
-                                                              ),
-                                                          icon: Icon(
-                                                            Icons
-                                                                .add_shopping_cart_rounded,
-                                                            color: const Color(
-                                                              0xFF00695C,
-                                                            ),
-                                                            size: 20,
-                                                          ),
-                                                        ),
-                                                ),
+                                child: Material(
+                                  elevation: 4,
+                                  borderRadius: BorderRadius.circular(20),
+                                  color: Colors.white,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 60,
+                                          height: 60,
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                const Color(0xFF00695C),
+                                                const Color(0xFF4DB6AC),
                                               ],
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                            ),
+                                            shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: const Color(
+                                                  0xFF00695C,
+                                                ).withOpacity(0.3),
+                                                blurRadius: 10,
+                                                offset: const Offset(0, 5),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Icon(
+                                            _getItemIcon(item['name']),
+                                            color: Colors.white,
+                                            size: 28,
+                                          ),
+                                        ),
+
+                                        const SizedBox(width: 16),
+
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                item['name'],
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Color(0xFF00695C),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                children: [
+                                                  const Icon(
+                                                    Icons.timer_rounded,
+                                                    size: 14,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    item['duration'],
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                  const Spacer(),
+                                                  Text(
+                                                    '${item['price']} fr',
+                                                    style: const TextStyle(
+                                                      fontSize: 20,
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                      color: Colors.black87,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                        const SizedBox(width: 12),
+
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            gradient: quantity > 0
+                                                ? LinearGradient(
+                                                    colors: [
+                                                      const Color(0xFF00695C),
+                                                      const Color(0xFF4DB6AC),
+                                                    ],
+                                                  )
+                                                : null,
+                                            color: quantity > 0
+                                                ? null
+                                                : Colors.grey.shade100,
+                                            borderRadius: BorderRadius.circular(
+                                              25,
+                                            ),
+                                            border: Border.all(
+                                              color: quantity > 0
+                                                  ? Colors.transparent
+                                                  : Colors.grey.shade300,
                                             ),
                                           ),
-                                        )
-                                        .animate()
-                                        .fadeIn(delay: (index * 100 + 400).ms)
-                                        .slideX(begin: 0.1, duration: 300.ms),
+                                          child: quantity > 0
+                                              ? Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    IconButton(
+                                                      onPressed: () =>
+                                                          _removeFromCart(
+                                                            itemKey,
+                                                          ),
+                                                      icon: const Icon(
+                                                        Icons.remove,
+                                                        color: Colors.white,
+                                                        size: 20,
+                                                      ),
+                                                      padding: EdgeInsets.zero,
+                                                    ),
+                                                    Text(
+                                                      '$quantity',
+                                                      style: const TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                    IconButton(
+                                                      onPressed: () =>
+                                                          _addToCart(
+                                                            currentService,
+                                                            item['name'],
+                                                            item['price']
+                                                                as double,
+                                                          ),
+                                                      icon: const Icon(
+                                                        Icons.add,
+                                                        color: Colors.white,
+                                                        size: 20,
+                                                      ),
+                                                      padding: EdgeInsets.zero,
+                                                    ),
+                                                  ],
+                                                )
+                                              : IconButton(
+                                                  onPressed: () => _addToCart(
+                                                    currentService,
+                                                    item['name'],
+                                                    item['price'] as double,
+                                                  ),
+                                                  icon: Icon(
+                                                    Icons
+                                                        .add_shopping_cart_rounded,
+                                                    color: const Color(
+                                                      0xFF00695C,
+                                                    ),
+                                                    size: 20,
+                                                  ),
+                                                ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ).animate().fadeIn(delay: (index * 100 + 400).ms),
                               );
                             },
                           ),
                   ),
 
-                  // Résumé du panier
                   if (_cart.isNotEmpty)
                     Container(
                       margin: const EdgeInsets.only(top: 16, bottom: 20),
@@ -778,7 +943,7 @@ class _PressingAdminPageState extends State<PressingPage> {
                                 ),
                               ),
                               Text(
-                                '${_calculateTotal().toStringAsFixed(2)}€',
+                                '${_calculateTotal().toStringAsFixed(2)} fr',
                                 style: const TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.w900,
@@ -787,7 +952,7 @@ class _PressingAdminPageState extends State<PressingPage> {
                               ),
                               if (_showPromo)
                                 Text(
-                                  'Avec promo: ${(_calculateTotal() * 0.8).toStringAsFixed(2)}€',
+                                  'Avec promo: ${(_calculateTotal() * 0.8).toStringAsFixed(2)} fr',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.white.withOpacity(0.8),
@@ -910,7 +1075,6 @@ class _PressingAdminPageState extends State<PressingPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Handle
               Container(
                 margin: const EdgeInsets.symmetric(vertical: 12),
                 width: 40,
@@ -925,7 +1089,6 @@ class _PressingAdminPageState extends State<PressingPage> {
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    // Titre
                     const Text(
                       'Récapitulatif',
                       style: TextStyle(
@@ -937,7 +1100,6 @@ class _PressingAdminPageState extends State<PressingPage> {
 
                     const SizedBox(height: 20),
 
-                    // Liste des articles
                     ..._cart.entries.map((entry) {
                       final parts = entry.key.split(' - ');
                       final serviceName = parts[0];
@@ -964,10 +1126,10 @@ class _PressingAdminPageState extends State<PressingPage> {
                         ),
                         title: Text(itemName),
                         subtitle: Text(
-                          '${item?['duration']} • ${item?['price']}€/unité',
+                          '${item?['duration']} • ${item?['price']} fr/unité',
                         ),
                         trailing: Text(
-                          '${entry.value} × ${item?['price']}€',
+                          '${entry.value} × ${item?['price']} fr',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -979,7 +1141,6 @@ class _PressingAdminPageState extends State<PressingPage> {
 
                     const Divider(height: 30),
 
-                    // Total
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -994,7 +1155,7 @@ class _PressingAdminPageState extends State<PressingPage> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              '${_calculateTotal().toStringAsFixed(2)}€',
+                              '${_calculateTotal().toStringAsFixed(2)} fr',
                               style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w900,
@@ -1003,7 +1164,7 @@ class _PressingAdminPageState extends State<PressingPage> {
                             ),
                             if (_showPromo)
                               Text(
-                                'Promo: ${(_calculateTotal() * 0.8).toStringAsFixed(2)}€',
+                                'Promo: ${(_calculateTotal() * 0.8).toStringAsFixed(2)} fr',
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: Colors.green,
@@ -1017,7 +1178,6 @@ class _PressingAdminPageState extends State<PressingPage> {
 
                     const SizedBox(height: 30),
 
-                    // Boutons d'action
                     Row(
                       children: [
                         Expanded(
@@ -1044,7 +1204,7 @@ class _PressingAdminPageState extends State<PressingPage> {
                           child: ElevatedButton(
                             onPressed: () {
                               Navigator.pop(context);
-                              _showConfirmationDialog(context);
+                              _validateOrder(context);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF00695C),
@@ -1055,7 +1215,7 @@ class _PressingAdminPageState extends State<PressingPage> {
                               elevation: 5,
                             ),
                             child: const Text(
-                              'Valider',
+                              'Valider & Envoyer',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w700,
@@ -1066,97 +1226,42 @@ class _PressingAdminPageState extends State<PressingPage> {
                         ),
                       ],
                     ),
+
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF25D366).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFF25D366).withOpacity(0.3),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.info_outline,
+                            color: Color(0xFF25D366),
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'La commande sera envoyée sur WhatsApp',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: const Color(0xFF25D366),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
             ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showConfirmationDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: const [Color(0xFF00695C), Color(0xFF4DB6AC)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(30),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 40,
-                  offset: const Offset(0, 20),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.check_rounded,
-                    color: Colors.white,
-                    size: 40,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Commande confirmée !',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Votre pressing sera collecté sous 24h. Vous recevrez une confirmation par SMS.',
-                  style: TextStyle(fontSize: 14, color: Colors.white70),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    setState(() {
-                      _cart.clear();
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF00695C),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 40,
-                      vertical: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                  ),
-                  child: const Text(
-                    'Parfait !',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ],
-            ),
           ),
         );
       },
