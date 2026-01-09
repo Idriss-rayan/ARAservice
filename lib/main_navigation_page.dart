@@ -569,9 +569,7 @@ class HomeScreen extends StatelessWidget {
                   page = ShoppingSimplePage();
                   break;
                 case 'Produits ménagers':
-                  page = ProduitsMenagersPage(
-                    subcategories: category.subcategories,
-                  );
+                  page = ProduitsMenagersPage();
                   break;
                 case 'Mode & Confection':
                   page = ModeConfectionPage(
