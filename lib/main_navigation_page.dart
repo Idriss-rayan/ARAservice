@@ -5,11 +5,9 @@ import 'package:araservice/categories/pressing_page.dart'
 import 'package:araservice/categories/produits_menagers_page.dart';
 import 'package:araservice/categories/shopping_page.dart';
 import 'package:araservice/components/dashboard_carousel.dart';
-import 'package:araservice/components/dashboard_welcome_container.dart';
-import 'package:araservice/services/firebase_test.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:araservice/auth/register_page.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 // Modèle de produit
