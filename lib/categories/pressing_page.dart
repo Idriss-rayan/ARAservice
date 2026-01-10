@@ -188,10 +188,13 @@ class _PressingAdminPageState extends State<PressingPage> {
     showDialog(
       context: context,
       builder: (context) {
+        final screenWidth = MediaQuery.of(context).size.width;
+
         return Dialog(
           backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
           child: Container(
-            padding: const EdgeInsets.all(32),
+            padding: EdgeInsets.all(screenWidth * 0.05),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: const [Color(0xFF00695C), Color(0xFF4DB6AC)],
@@ -211,61 +214,65 @@ class _PressingAdminPageState extends State<PressingPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: screenWidth * 0.2,
+                  height: screenWidth * 0.2,
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.check_rounded,
                     color: Colors.white,
-                    size: 40,
+                    size: screenWidth * 0.1,
                   ),
                 ),
-                const SizedBox(height: 24),
-                const Text(
+                SizedBox(height: screenWidth * 0.05),
+                Text(
                   'Commande confirmée !',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: screenWidth * 0.06,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: screenWidth * 0.03),
                 Text(
                   'Merci $userName ! Votre commande a été envoyée sur WhatsApp.\n\nVotre pressing sera collecté sous 24h.',
-                  style: const TextStyle(fontSize: 14, color: Colors.white70),
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.035,
+                    color: Colors.white70,
+                  ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: screenWidth * 0.04),
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(15),
                   ),
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(screenWidth * 0.03),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.phone,
-                        color: Color(0xFF25D366),
-                        size: 24,
+                        color: const Color(0xFF25D366),
+                        size: screenWidth * 0.06,
                       ),
-                      const SizedBox(width: 10),
-                      const Text(
+                      SizedBox(width: screenWidth * 0.025),
+                      Text(
                         'Commande envoyée sur WhatsApp',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
+                          fontSize: screenWidth * 0.035,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: screenWidth * 0.05),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
@@ -276,17 +283,20 @@ class _PressingAdminPageState extends State<PressingPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: const Color(0xFF00695C),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 40,
-                      vertical: 16,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.1,
+                      vertical: screenWidth * 0.04,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Parfait !',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.04,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
@@ -337,6 +347,10 @@ class _PressingAdminPageState extends State<PressingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isSmallPhone = screenWidth < 360;
+
     if (_subcategories.isEmpty) {
       return Scaffold(
         backgroundColor: const Color(0xFFF8FDFF),
@@ -349,10 +363,13 @@ class _PressingAdminPageState extends State<PressingPage> {
                   const Color(0xFF00695C),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: screenHeight * 0.03),
               Text(
                 'Chargement des services...',
-                style: TextStyle(color: const Color(0xFF00695C), fontSize: 16),
+                style: TextStyle(
+                  color: const Color(0xFF00695C),
+                  fontSize: screenWidth * 0.045,
+                ),
               ),
             ],
           ),
@@ -368,7 +385,7 @@ class _PressingAdminPageState extends State<PressingPage> {
       body: Column(
         children: [
           Container(
-            height: 220,
+            height: screenHeight * 0.28,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: const [
@@ -395,11 +412,11 @@ class _PressingAdminPageState extends State<PressingPage> {
             child: Stack(
               children: [
                 Positioned(
-                  top: -40,
-                  right: -30,
+                  top: -screenWidth * 0.1,
+                  right: -screenWidth * 0.08,
                   child: Container(
-                    width: 120,
-                    height: 120,
+                    width: screenWidth * 0.3,
+                    height: screenWidth * 0.3,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
@@ -413,11 +430,11 @@ class _PressingAdminPageState extends State<PressingPage> {
                 ).animate().fadeIn(delay: 300.ms),
 
                 Positioned(
-                  bottom: -30,
-                  left: -20,
+                  bottom: -screenWidth * 0.08,
+                  left: -screenWidth * 0.05,
                   child: Container(
-                    width: 100,
-                    height: 100,
+                    width: screenWidth * 0.25,
+                    height: screenWidth * 0.25,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
@@ -431,7 +448,11 @@ class _PressingAdminPageState extends State<PressingPage> {
                 ).animate().fadeIn(delay: 500.ms),
 
                 Padding(
-                  padding: const EdgeInsets.only(top: 60, left: 24, right: 24),
+                  padding: EdgeInsets.only(
+                    top: screenHeight * 0.06,
+                    left: screenWidth * 0.05,
+                    right: screenWidth * 0.05,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -441,16 +462,16 @@ class _PressingAdminPageState extends State<PressingPage> {
                           IconButton(
                             onPressed: () => Navigator.pop(context),
                             icon: Container(
-                              width: 44,
-                              height: 44,
+                              width: screenWidth * 0.11,
+                              height: screenWidth * 0.11,
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.arrow_back_ios_new_rounded,
                                 color: Colors.white,
-                                size: 20,
+                                size: screenWidth * 0.05,
                               ),
                             ),
                           ).animate().scale(duration: 300.ms),
@@ -460,9 +481,9 @@ class _PressingAdminPageState extends State<PressingPage> {
                                   onTap: () =>
                                       setState(() => _showPromo = false),
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 10,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: screenWidth * 0.04,
+                                      vertical: screenWidth * 0.025,
                                     ),
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
@@ -484,28 +505,28 @@ class _PressingAdminPageState extends State<PressingPage> {
                                     ),
                                     child: Row(
                                       children: [
-                                        const Icon(
+                                        Icon(
                                           Icons.local_offer_rounded,
                                           color: Colors.white,
-                                          size: 16,
+                                          size: screenWidth * 0.04,
                                         ),
-                                        const SizedBox(width: 6),
-                                        const Text(
+                                        SizedBox(width: screenWidth * 0.015),
+                                        Text(
                                           '-20%',
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.w800,
-                                            fontSize: 14,
+                                            fontSize: screenWidth * 0.035,
                                           ),
                                         ),
-                                        const SizedBox(width: 4),
+                                        SizedBox(width: screenWidth * 0.01),
                                         Text(
                                           '1ère commande',
                                           style: TextStyle(
                                             color: Colors.white.withOpacity(
                                               0.9,
                                             ),
-                                            fontSize: 12,
+                                            fontSize: screenWidth * 0.03,
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -519,7 +540,7 @@ class _PressingAdminPageState extends State<PressingPage> {
                         ],
                       ),
 
-                      const SizedBox(height: 20),
+                      SizedBox(height: screenHeight * 0.025),
 
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -527,7 +548,7 @@ class _PressingAdminPageState extends State<PressingPage> {
                           Text(
                             widget.categoryName,
                             style: TextStyle(
-                              fontSize: 32,
+                              fontSize: screenWidth * 0.08,
                               fontWeight: FontWeight.w900,
                               color: Colors.white,
                               letterSpacing: -0.5,
@@ -543,94 +564,99 @@ class _PressingAdminPageState extends State<PressingPage> {
             ),
           ),
 
-          Container(
-            height: 80,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _subcategories.length,
-              itemBuilder: (context, index) {
-                final isSelected = _selectedServiceIndex == index;
-                final serviceName = _subcategories[index];
+          SizedBox(
+            height: screenHeight * 0.1,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.05,
+                vertical: screenHeight * 0.015,
+              ),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _subcategories.length,
+                itemBuilder: (context, index) {
+                  final isSelected = _selectedServiceIndex == index;
+                  final serviceName = _subcategories[index];
 
-                return Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedServiceIndex = index;
-                      });
-                    },
-                    child: AnimatedContainer(
-                      duration: 300.ms,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: isSelected
-                            ? LinearGradient(
-                                colors: const [
-                                  Color(0xFF00796B),
-                                  Color(0xFF4DB6AC),
-                                ],
-                              )
-                            : null,
-                        color: isSelected ? null : Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(25),
-                        border: isSelected
-                            ? null
-                            : Border.all(color: Colors.grey.shade300),
-                        boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                  color: const Color(
-                                    0xFF00796C,
-                                  ).withOpacity(0.3),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 5),
-                                ),
-                              ]
-                            : null,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _getServiceIcon(serviceName),
-                            color: isSelected
-                                ? Colors.white
-                                : const Color(0xFF00796C),
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            serviceName,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                  return Padding(
+                    padding: EdgeInsets.only(right: screenWidth * 0.03),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedServiceIndex = index;
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: 300.ms,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.04,
+                          vertical: screenHeight * 0.012,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: isSelected
+                              ? LinearGradient(
+                                  colors: const [
+                                    Color(0xFF00796B),
+                                    Color(0xFF4DB6AC),
+                                  ],
+                                )
+                              : null,
+                          color: isSelected ? null : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(25),
+                          border: isSelected
+                              ? null
+                              : Border.all(color: Colors.grey.shade300),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFF00796C,
+                                    ).withOpacity(0.3),
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 5),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _getServiceIcon(serviceName),
                               color: isSelected
                                   ? Colors.white
-                                  : Colors.grey.shade700,
+                                  : const Color(0xFF00796C),
+                              size: screenWidth * 0.05,
                             ),
-                          ),
-                        ],
+                            SizedBox(width: screenWidth * 0.02),
+                            Text(
+                              serviceName,
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.035,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected
+                                    ? Colors.white
+                                    : Colors.grey.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
 
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
               child: Column(
                 children: [
                   Container(
-                    margin: const EdgeInsets.only(bottom: 20),
-                    padding: const EdgeInsets.all(16),
+                    margin: EdgeInsets.only(bottom: screenHeight * 0.02),
+                    padding: EdgeInsets.all(screenWidth * 0.04),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
@@ -654,22 +680,22 @@ class _PressingAdminPageState extends State<PressingPage> {
                   ).animate().fadeIn(delay: 200.ms),
 
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
+                    padding: EdgeInsets.only(bottom: screenHeight * 0.015),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           currentService,
-                          style: const TextStyle(
-                            fontSize: 22,
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.055,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF00695C),
+                            color: const Color(0xFF00695C),
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.03,
+                            vertical: screenHeight * 0.007,
                           ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFE0F2F1),
@@ -677,10 +703,10 @@ class _PressingAdminPageState extends State<PressingPage> {
                           ),
                           child: Text(
                             '${items.length} options',
-                            style: const TextStyle(
-                              fontSize: 12,
+                            style: TextStyle(
+                              fontSize: screenWidth * 0.03,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF00796B),
+                              color: const Color(0xFF00796B),
                             ),
                           ),
                         ),
@@ -696,14 +722,14 @@ class _PressingAdminPageState extends State<PressingPage> {
                               children: [
                                 Icon(
                                   Icons.cleaning_services_rounded,
-                                  size: 64,
+                                  size: screenWidth * 0.15,
                                   color: Colors.grey.shade300,
                                 ),
-                                const SizedBox(height: 16),
+                                SizedBox(height: screenHeight * 0.02),
                                 Text(
                                   'Aucun article disponible',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: screenWidth * 0.04,
                                     color: Colors.grey.shade500,
                                   ),
                                 ),
@@ -720,18 +746,20 @@ class _PressingAdminPageState extends State<PressingPage> {
                               final quantity = _cart[itemKey] ?? 0;
 
                               return Container(
-                                margin: const EdgeInsets.only(bottom: 16),
+                                margin: EdgeInsets.only(
+                                  bottom: screenHeight * 0.015,
+                                ),
                                 child: Material(
                                   elevation: 4,
                                   borderRadius: BorderRadius.circular(20),
                                   color: Colors.white,
                                   child: Padding(
-                                    padding: const EdgeInsets.all(16),
+                                    padding: EdgeInsets.all(screenWidth * 0.04),
                                     child: Row(
                                       children: [
                                         Container(
-                                          width: 60,
-                                          height: 60,
+                                          width: screenWidth * 0.15,
+                                          height: screenWidth * 0.15,
                                           decoration: BoxDecoration(
                                             gradient: LinearGradient(
                                               colors: [
@@ -755,11 +783,11 @@ class _PressingAdminPageState extends State<PressingPage> {
                                           child: Icon(
                                             _getItemIcon(item['name']),
                                             color: Colors.white,
-                                            size: 28,
+                                            size: screenWidth * 0.07,
                                           ),
                                         ),
 
-                                        const SizedBox(width: 16),
+                                        SizedBox(width: screenWidth * 0.04),
 
                                         Expanded(
                                           child: Column(
@@ -768,33 +796,42 @@ class _PressingAdminPageState extends State<PressingPage> {
                                             children: [
                                               Text(
                                                 item['name'],
-                                                style: const TextStyle(
-                                                  fontSize: 16,
+                                                style: TextStyle(
+                                                  fontSize: screenWidth * 0.04,
                                                   fontWeight: FontWeight.w700,
-                                                  color: Color(0xFF00695C),
+                                                  color: const Color(
+                                                    0xFF00695C,
+                                                  ),
                                                 ),
                                               ),
-                                              const SizedBox(height: 4),
+                                              SizedBox(
+                                                height: screenHeight * 0.005,
+                                              ),
                                               Row(
                                                 children: [
-                                                  const Icon(
+                                                  Icon(
                                                     Icons.timer_rounded,
-                                                    size: 14,
+                                                    size: screenWidth * 0.035,
                                                     color: Colors.grey,
                                                   ),
-                                                  const SizedBox(width: 4),
-                                                  Text(
-                                                    item['duration'],
-                                                    style: const TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.grey,
+                                                  SizedBox(
+                                                    width: screenWidth * 0.01,
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      item['duration'],
+                                                      style: TextStyle(
+                                                        fontSize:
+                                                            screenWidth * 0.03,
+                                                        color: Colors.grey,
+                                                      ),
                                                     ),
                                                   ),
-                                                  const Spacer(),
                                                   Text(
                                                     '${item['price']} fr',
-                                                    style: const TextStyle(
-                                                      fontSize: 20,
+                                                    style: TextStyle(
+                                                      fontSize:
+                                                          screenWidth * 0.045,
                                                       fontWeight:
                                                           FontWeight.w900,
                                                       color: Colors.black87,
@@ -806,7 +843,7 @@ class _PressingAdminPageState extends State<PressingPage> {
                                           ),
                                         ),
 
-                                        const SizedBox(width: 12),
+                                        SizedBox(width: screenWidth * 0.03),
 
                                         Container(
                                           decoration: BoxDecoration(
@@ -822,7 +859,7 @@ class _PressingAdminPageState extends State<PressingPage> {
                                                 ? null
                                                 : Colors.grey.shade100,
                                             borderRadius: BorderRadius.circular(
-                                              25,
+                                              screenWidth * 0.06,
                                             ),
                                             border: Border.all(
                                               color: quantity > 0
@@ -840,17 +877,28 @@ class _PressingAdminPageState extends State<PressingPage> {
                                                           _removeFromCart(
                                                             itemKey,
                                                           ),
-                                                      icon: const Icon(
+                                                      icon: Icon(
                                                         Icons.remove,
                                                         color: Colors.white,
-                                                        size: 20,
+                                                        size:
+                                                            screenWidth * 0.05,
                                                       ),
                                                       padding: EdgeInsets.zero,
+                                                      constraints:
+                                                          BoxConstraints(
+                                                            minWidth:
+                                                                screenWidth *
+                                                                0.1,
+                                                            minHeight:
+                                                                screenWidth *
+                                                                0.1,
+                                                          ),
                                                     ),
                                                     Text(
                                                       '$quantity',
-                                                      style: const TextStyle(
-                                                        fontSize: 16,
+                                                      style: TextStyle(
+                                                        fontSize:
+                                                            screenWidth * 0.04,
                                                         fontWeight:
                                                             FontWeight.w700,
                                                         color: Colors.white,
@@ -864,12 +912,22 @@ class _PressingAdminPageState extends State<PressingPage> {
                                                             item['price']
                                                                 as double,
                                                           ),
-                                                      icon: const Icon(
+                                                      icon: Icon(
                                                         Icons.add,
                                                         color: Colors.white,
-                                                        size: 20,
+                                                        size:
+                                                            screenWidth * 0.05,
                                                       ),
                                                       padding: EdgeInsets.zero,
+                                                      constraints:
+                                                          BoxConstraints(
+                                                            minWidth:
+                                                                screenWidth *
+                                                                0.1,
+                                                            minHeight:
+                                                                screenWidth *
+                                                                0.1,
+                                                          ),
                                                     ),
                                                   ],
                                                 )
@@ -885,7 +943,12 @@ class _PressingAdminPageState extends State<PressingPage> {
                                                     color: const Color(
                                                       0xFF00695C,
                                                     ),
-                                                    size: 20,
+                                                    size: screenWidth * 0.05,
+                                                  ),
+                                                  constraints: BoxConstraints(
+                                                    minWidth: screenWidth * 0.1,
+                                                    minHeight:
+                                                        screenWidth * 0.1,
                                                   ),
                                                 ),
                                         ),
@@ -900,8 +963,11 @@ class _PressingAdminPageState extends State<PressingPage> {
 
                   if (_cart.isNotEmpty)
                     Container(
-                      margin: const EdgeInsets.only(top: 16, bottom: 20),
-                      padding: const EdgeInsets.all(20),
+                      margin: EdgeInsets.only(
+                        top: screenHeight * 0.015,
+                        bottom: screenHeight * 0.02,
+                      ),
+                      padding: EdgeInsets.all(screenWidth * 0.05),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: const [Color(0xFF00695C), Color(0xFF00796B)],
@@ -917,65 +983,71 @@ class _PressingAdminPageState extends State<PressingPage> {
                           ),
                         ],
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Column(
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                '${_getTotalItems()} article${_getTotalItems() > 1 ? 's' : ''}',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white70,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${_getTotalItems()} article${_getTotalItems() > 1 ? 's' : ''}',
+                                    style: TextStyle(
+                                      fontSize: screenWidth * 0.035,
+                                      color: Colors.white70,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${_calculateTotal().toStringAsFixed(2)} fr',
+                                    style: TextStyle(
+                                      fontSize: screenWidth * 0.07,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  if (_showPromo)
+                                    Text(
+                                      'Avec promo: ${(_calculateTotal() * 0.8).toStringAsFixed(2)} fr',
+                                      style: TextStyle(
+                                        fontSize: screenWidth * 0.03,
+                                        color: Colors.white.withOpacity(0.8),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                ],
                               ),
-                              Text(
-                                '${_calculateTotal().toStringAsFixed(2)} fr',
-                                style: const TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.white,
+                              ElevatedButton.icon(
+                                onPressed: () => _showOrderSummary(context),
+                                icon: Icon(
+                                  Icons.shopping_bag_rounded,
+                                  size: screenWidth * 0.05,
                                 ),
-                              ),
-                              if (_showPromo)
-                                Text(
-                                  'Avec promo: ${(_calculateTotal() * 0.8).toStringAsFixed(2)} fr',
+                                label: Text(
+                                  'Commander',
                                   style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.white.withOpacity(0.8),
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: screenWidth * 0.04,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: const Color(0xFF00695C),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: screenWidth * 0.05,
+                                    vertical: screenHeight * 0.015,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  elevation: 5,
+                                ),
+                              ),
                             ],
                           ),
-                          ElevatedButton.icon(
-                            onPressed: () => _showOrderSummary(context),
-                            icon: const Icon(
-                              Icons.shopping_bag_rounded,
-                              size: 20,
-                            ),
-                            label: const Text(
-                              'Commander',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: const Color(0xFF00695C),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 14,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              elevation: 5,
-                            ),
-                          ),
+                          if (screenWidth < 400) // Pour les très petits écrans
+                            SizedBox(height: screenHeight * 0.01),
                         ],
                       ),
                     ).animate().slideY(begin: 0.5, duration: 400.ms),
@@ -989,17 +1061,19 @@ class _PressingAdminPageState extends State<PressingPage> {
   }
 
   Widget _buildStatCard(String emoji, String text) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Column(
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 24)),
-        const SizedBox(height: 4),
+        Text(emoji, style: TextStyle(fontSize: screenWidth * 0.06)),
+        SizedBox(height: screenWidth * 0.01),
         Text(
           text,
           textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 11,
+          style: TextStyle(
+            fontSize: screenWidth * 0.028,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF00695C),
+            color: const Color(0xFF00695C),
           ),
         ),
       ],
@@ -1044,6 +1118,9 @@ class _PressingAdminPageState extends State<PressingPage> {
   }
 
   void _showOrderSummary(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1065,9 +1142,9 @@ class _PressingAdminPageState extends State<PressingPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                margin: const EdgeInsets.symmetric(vertical: 12),
-                width: 40,
-                height: 5,
+                margin: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
+                width: screenWidth * 0.1,
+                height: screenHeight * 0.005,
                 decoration: BoxDecoration(
                   color: Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(10),
@@ -1075,19 +1152,19 @@ class _PressingAdminPageState extends State<PressingPage> {
               ),
 
               Padding(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(screenWidth * 0.05),
                 child: Column(
                   children: [
-                    const Text(
+                    Text(
                       'Récapitulatif',
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: screenWidth * 0.06,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF00695C),
+                        color: const Color(0xFF00695C),
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    SizedBox(height: screenHeight * 0.02),
 
                     ..._cart.entries.map((entry) {
                       final parts = entry.key.split(' - ');
@@ -1101,8 +1178,8 @@ class _PressingAdminPageState extends State<PressingPage> {
                       return ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: Container(
-                          width: 40,
-                          height: 40,
+                          width: screenWidth * 0.1,
+                          height: screenWidth * 0.1,
                           decoration: BoxDecoration(
                             color: const Color(0xFFE0F2F1),
                             borderRadius: BorderRadius.circular(10),
@@ -1110,33 +1187,37 @@ class _PressingAdminPageState extends State<PressingPage> {
                           child: Icon(
                             _getItemIcon(itemName),
                             color: const Color(0xFF00695C),
-                            size: 20,
+                            size: screenWidth * 0.05,
                           ),
                         ),
-                        title: Text(itemName),
+                        title: Text(
+                          itemName,
+                          style: TextStyle(fontSize: screenWidth * 0.04),
+                        ),
                         subtitle: Text(
                           '${item?['duration']} • ${item?['price']} fr/unité',
+                          style: TextStyle(fontSize: screenWidth * 0.035),
                         ),
                         trailing: Text(
                           '${entry.value} × ${item?['price']} fr',
-                          style: const TextStyle(
-                            fontSize: 16,
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.04,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF00695C),
+                            color: const Color(0xFF00695C),
                           ),
                         ),
                       );
                     }),
 
-                    const Divider(height: 30),
+                    Divider(height: screenHeight * 0.03),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Total:',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: screenWidth * 0.045,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -1145,17 +1226,17 @@ class _PressingAdminPageState extends State<PressingPage> {
                           children: [
                             Text(
                               '${_calculateTotal().toStringAsFixed(2)} fr',
-                              style: const TextStyle(
-                                fontSize: 24,
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.06,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF00695C),
+                                color: const Color(0xFF00695C),
                               ),
                             ),
                             if (_showPromo)
                               Text(
                                 'Promo: ${(_calculateTotal() * 0.8).toStringAsFixed(2)} fr',
-                                style: const TextStyle(
-                                  fontSize: 14,
+                                style: TextStyle(
+                                  fontSize: screenWidth * 0.035,
                                   color: Colors.green,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -1165,7 +1246,7 @@ class _PressingAdminPageState extends State<PressingPage> {
                       ],
                     ),
 
-                    const SizedBox(height: 30),
+                    SizedBox(height: screenHeight * 0.03),
 
                     Row(
                       children: [
@@ -1174,21 +1255,24 @@ class _PressingAdminPageState extends State<PressingPage> {
                             onPressed: () => Navigator.pop(context),
                             style: OutlinedButton.styleFrom(
                               side: const BorderSide(color: Color(0xFF00695C)),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              padding: EdgeInsets.symmetric(
+                                vertical: screenHeight * 0.02,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15),
                               ),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Continuer',
                               style: TextStyle(
-                                color: Color(0xFF00695C),
+                                color: const Color(0xFF00695C),
                                 fontWeight: FontWeight.w600,
+                                fontSize: screenWidth * 0.04,
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        SizedBox(width: screenWidth * 0.04),
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () {
@@ -1197,18 +1281,20 @@ class _PressingAdminPageState extends State<PressingPage> {
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF00695C),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              padding: EdgeInsets.symmetric(
+                                vertical: screenHeight * 0.02,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               elevation: 5,
                             ),
-                            child: const Text(
+                            child: Text(
                               'Valider & Envoyer',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w700,
-                                fontSize: 16,
+                                fontSize: screenWidth * 0.04,
                               ),
                             ),
                           ),
@@ -1216,9 +1302,9 @@ class _PressingAdminPageState extends State<PressingPage> {
                       ],
                     ),
 
-                    const SizedBox(height: 16),
+                    SizedBox(height: screenHeight * 0.02),
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(screenWidth * 0.03),
                       decoration: BoxDecoration(
                         color: const Color(0xFF25D366).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
@@ -1228,17 +1314,17 @@ class _PressingAdminPageState extends State<PressingPage> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.info_outline,
-                            color: Color(0xFF25D366),
-                            size: 18,
+                            color: const Color(0xFF25D366),
+                            size: screenWidth * 0.045,
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: screenWidth * 0.02),
                           Expanded(
                             child: Text(
                               'La commande sera envoyée sur WhatsApp',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: screenWidth * 0.03,
                                 color: const Color(0xFF25D366),
                                 fontWeight: FontWeight.w500,
                               ),
@@ -1250,6 +1336,7 @@ class _PressingAdminPageState extends State<PressingPage> {
                   ],
                 ),
               ),
+              SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
             ],
           ),
         );

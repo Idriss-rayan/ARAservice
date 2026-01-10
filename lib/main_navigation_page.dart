@@ -970,26 +970,16 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
               SizedBox(height: screenWidth * 0.02),
               SizedBox(
-                height: screenWidth * 0.12,
                 child: Text(
                   product.name,
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    fontSize: screenWidth * 0.035,
+                    fontSize: screenWidth * 0.025,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              SizedBox(height: screenWidth * 0.01),
-              Text(
-                product.category,
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: screenWidth * 0.03,
-                ),
-              ),
-              const Spacer(),
               Text(
                 '${product.price.toStringAsFixed(2)} frs',
                 style: TextStyle(

@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:share_plus/share_plus.dart'; // Ajout du package share_plus
+import 'package:share_plus/share_plus.dart';
 
 class ShoppingSimplePage extends StatefulWidget {
   const ShoppingSimplePage({super.key});
@@ -42,7 +42,7 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
         _productsCache[doc['name']] = ProductData(
           name: doc['name'],
           price: (doc['price'] as num).toDouble(),
-          image: '', // Vous pouvez ajouter une URL d'image ici
+          image: '',
         );
       }
     } catch (e) {
@@ -120,7 +120,6 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
     });
   }
 
-  // Nouvelle fonction pour partager la commande sur WhatsApp
   Future<void> _shareOrderOnWhatsApp() async {
     if (_cartItems.isEmpty) return;
 
@@ -162,114 +161,158 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
     }
   }
 
-  void _showOrderConfirmation() {
+  void _showOrderConfirmation(BuildContext context) {
     if (_cartItems.isEmpty) return;
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Column(
-          children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 60),
-            SizedBox(height: 10),
-          ],
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: screenWidth * 0.05,
+          vertical: screenHeight * 0.1,
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Commande confirmée !',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-            Text(
-              '${_calculateTotalItems()} articles commandés',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 15),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Total:',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(screenWidth * 0.05),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.check_circle,
+                  color: Colors.green,
+                  size: screenWidth * 0.15,
+                ),
+                SizedBox(height: screenHeight * 0.02),
+                Text(
+                  'Commande confirmée !',
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.05,
+                    fontWeight: FontWeight.bold,
                   ),
-                  Text(
-                    '${_calculateTotal().toStringAsFixed(0)} fcfa',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1565C0),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: screenHeight * 0.01),
+                Text(
+                  '${_calculateTotalItems()} articles commandés',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: screenWidth * 0.04,
+                  ),
+                ),
+                SizedBox(height: screenHeight * 0.02),
+                Container(
+                  padding: EdgeInsets.all(screenWidth * 0.04),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Total:',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.045,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        '${_calculateTotal().toStringAsFixed(0)} fcfa',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.045,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1565C0),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: screenHeight * 0.02),
+                Text(
+                  'Souhaitez-vous partager cette commande sur WhatsApp ?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.035,
+                    color: Colors.grey,
+                  ),
+                ),
+                SizedBox(height: screenHeight * 0.03),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.grey,
+                          padding: EdgeInsets.symmetric(
+                            vertical: screenHeight * 0.015,
+                          ),
+                        ),
+                        child: Text(
+                          'Annuler',
+                          style: TextStyle(fontSize: screenWidth * 0.04),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: screenWidth * 0.03),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _shareOrderOnWhatsApp();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                            vertical: screenHeight * 0.015,
+                          ),
+                        ),
+                        icon: Icon(Icons.phone, size: screenWidth * 0.05),
+                        label: Text(
+                          'WhatsApp',
+                          style: TextStyle(fontSize: screenWidth * 0.04),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: screenHeight * 0.02),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _clearCart();
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF1565C0),
+                      side: const BorderSide(color: Color(0xFF1565C0)),
+                      padding: EdgeInsets.symmetric(
+                        vertical: screenHeight * 0.015,
+                      ),
+                    ),
+                    child: Text(
+                      'Terminer sans partager',
+                      style: TextStyle(fontSize: screenWidth * 0.04),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            const SizedBox(height: 15),
-            const Text(
-              'Souhaitez-vous partager cette commande sur WhatsApp ?',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-          ],
+          ),
         ),
-        actions: [
-          Row(
-            children: [
-              Expanded(
-                child: TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: TextButton.styleFrom(foregroundColor: Colors.grey),
-                  child: const Text('Annuler'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _shareOrderOnWhatsApp();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                  ),
-                  icon: const Icon(Icons.phone, size: 20),
-                  label: const Text('WhatsApp'),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _clearCart();
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF1565C0),
-                side: const BorderSide(color: Color(0xFF1565C0)),
-              ),
-              child: const Text('Terminer sans partager'),
-            ),
-          ),
-        ],
       ),
     );
   }
 
-  Widget _buildProductCard(ProductData product) {
+  Widget _buildProductCard(ProductData product, BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     final cartItem = _cartItems.firstWhere(
       (item) => item.name == product.name,
       orElse: () => CartItem(name: '', price: 0),
@@ -290,9 +333,8 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image placeholder
           Container(
-            height: 110,
+            height: screenWidth * 0.3,
             decoration: BoxDecoration(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(20),
@@ -309,64 +351,79 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
             child: Center(
               child: Icon(
                 Icons.shopping_bag,
-                size: 50,
+                size: screenWidth * 0.12,
                 color: Colors.white.withOpacity(0.9),
               ),
             ),
           ),
 
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    height: 1.3,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '${product.price.toStringAsFixed(0)} fcfa',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1565C0),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                if (cartItem.name.isNotEmpty)
-                  _buildQuantityControls(cartItem, product)
-                else
-                  SizedBox(
-                    width: double.infinity,
-                    height: 40,
-                    child: ElevatedButton(
-                      onPressed: () => _addToCart(product),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1565C0),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(screenWidth * 0.03),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        product.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.035,
+                          fontWeight: FontWeight.w600,
+                          height: 1.3,
                         ),
                       ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.add, size: 18),
-                          SizedBox(width: 6),
-                          Text('Ajouter'),
-                        ],
+                      SizedBox(height: screenWidth * 0.015),
+                      Text(
+                        '${product.price.toStringAsFixed(0)} fcfa',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.045,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1565C0),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  SizedBox(height: screenWidth * 0.02),
+
+                  if (cartItem.name.isNotEmpty)
+                    _buildQuantityControls(cartItem, product, context)
+                  else
+                    SizedBox(
+                      width: double.infinity,
+                      height: screenWidth * 0.1,
+                      child: ElevatedButton(
+                        onPressed: () => _addToCart(product),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1565C0),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            vertical: screenWidth * 0.02,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add, size: screenWidth * 0.045),
+                            SizedBox(width: screenWidth * 0.015),
+                            Text(
+                              'Ajouter',
+                              style: TextStyle(fontSize: screenWidth * 0.03),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -374,7 +431,13 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
     );
   }
 
-  Widget _buildQuantityControls(CartItem cartItem, ProductData product) {
+  Widget _buildQuantityControls(
+    CartItem cartItem,
+    ProductData product,
+    BuildContext context,
+  ) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF5F9FF),
@@ -384,29 +447,35 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
         children: [
           IconButton(
             onPressed: () => _removeFromCart(cartItem.name),
-            icon: const Icon(Icons.remove, size: 18),
+            icon: Icon(Icons.remove, size: screenWidth * 0.045),
             color: const Color(0xFF1565C0),
-            padding: const EdgeInsets.all(8),
-            constraints: const BoxConstraints(),
+            padding: EdgeInsets.all(screenWidth * 0.02),
+            constraints: BoxConstraints(
+              minWidth: screenWidth * 0.1,
+              minHeight: screenWidth * 0.1,
+            ),
           ),
           Expanded(
             child: Center(
               child: Text(
                 '${cartItem.quantity}',
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: screenWidth * 0.04,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1565C0),
+                  color: const Color(0xFF1565C0),
                 ),
               ),
             ),
           ),
           IconButton(
             onPressed: () => _addToCart(product),
-            icon: const Icon(Icons.add, size: 18),
+            icon: Icon(Icons.add, size: screenWidth * 0.045),
             color: const Color(0xFF1565C0),
-            padding: const EdgeInsets.all(8),
-            constraints: const BoxConstraints(),
+            padding: EdgeInsets.all(screenWidth * 0.02),
+            constraints: BoxConstraints(
+              minWidth: screenWidth * 0.1,
+              minHeight: screenWidth * 0.1,
+            ),
           ),
         ],
       ),
@@ -414,6 +483,9 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
   }
 
   Widget _buildCartPanel() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     if (!_isCartVisible) return const SizedBox.shrink();
 
     return Positioned(
@@ -422,9 +494,7 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
       right: 0,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        height: _cartItems.isEmpty
-            ? 100
-            : 280, // Ajusté pour le bouton WhatsApp
+        height: _cartItems.isEmpty ? screenHeight * 0.15 : screenHeight * 0.6,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -438,11 +508,10 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
         ),
         child: Column(
           children: [
-            // Handle
             Container(
-              margin: const EdgeInsets.only(top: 10),
-              width: 40,
-              height: 5,
+              margin: EdgeInsets.only(top: screenHeight * 0.01),
+              width: screenWidth * 0.1,
+              height: screenHeight * 0.005,
               decoration: BoxDecoration(
                 color: Colors.grey[300],
                 borderRadius: BorderRadius.circular(3),
@@ -450,21 +519,24 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
             ),
 
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(screenWidth * 0.04),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     'Panier (${_calculateTotalItems()})',
-                    style: const TextStyle(
-                      fontSize: 18,
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.045,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   if (_cartItems.isNotEmpty)
                     IconButton(
                       onPressed: _clearCart,
-                      icon: const Icon(Icons.delete_outline),
+                      icon: Icon(
+                        Icons.delete_outline,
+                        size: screenWidth * 0.06,
+                      ),
                       color: Colors.red,
                     ),
                 ],
@@ -479,13 +551,16 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
                     children: [
                       Icon(
                         Icons.shopping_cart_outlined,
-                        size: 40,
+                        size: screenWidth * 0.15,
                         color: Colors.grey[300],
                       ),
-                      const SizedBox(height: 8),
-                      const Text(
+                      SizedBox(height: screenHeight * 0.02),
+                      Text(
                         'Panier vide',
-                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: screenWidth * 0.04,
+                        ),
                       ),
                     ],
                   ),
@@ -494,13 +569,13 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
             else
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
                   itemCount: _cartItems.length,
                   itemBuilder: (context, index) {
                     final item = _cartItems[index];
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.all(12),
+                      margin: EdgeInsets.only(bottom: screenHeight * 0.01),
+                      padding: EdgeInsets.all(screenWidth * 0.03),
                       decoration: BoxDecoration(
                         color: Colors.grey[50],
                         borderRadius: BorderRadius.circular(10),
@@ -508,43 +583,44 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
                       child: Row(
                         children: [
                           Container(
-                            width: 40,
-                            height: 40,
+                            width: screenWidth * 0.1,
+                            height: screenWidth * 0.1,
                             decoration: BoxDecoration(
                               color: const Color(0xFF1565C0).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.shopping_bag,
-                              size: 20,
-                              color: Color(0xFF1565C0),
+                              size: screenWidth * 0.05,
+                              color: const Color(0xFF1565C0),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: screenWidth * 0.03),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   item.name,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w600,
+                                    fontSize: screenWidth * 0.035,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(height: 2),
+                                SizedBox(height: screenHeight * 0.005),
                                 Text(
                                   '${item.price.toStringAsFixed(0)} fcfa',
-                                  style: const TextStyle(
-                                    color: Color(0xFF1565C0),
-                                    fontSize: 12,
+                                  style: TextStyle(
+                                    color: const Color(0xFF1565C0),
+                                    fontSize: screenWidth * 0.03,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: screenWidth * 0.03),
                           Container(
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -555,16 +631,24 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
                               children: [
                                 IconButton(
                                   onPressed: () => _removeFromCart(item.name),
-                                  icon: const Icon(Icons.remove, size: 16),
-                                  padding: const EdgeInsets.all(4),
+                                  icon: Icon(
+                                    Icons.remove,
+                                    size: screenWidth * 0.04,
+                                  ),
+                                  padding: EdgeInsets.all(screenWidth * 0.01),
+                                  constraints: BoxConstraints(
+                                    minWidth: screenWidth * 0.1,
+                                    minHeight: screenWidth * 0.1,
+                                  ),
                                 ),
                                 SizedBox(
-                                  width: 30,
+                                  width: screenWidth * 0.08,
                                   child: Center(
                                     child: Text(
                                       '${item.quantity}',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontWeight: FontWeight.bold,
+                                        fontSize: screenWidth * 0.04,
                                       ),
                                     ),
                                   ),
@@ -576,8 +660,15 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
                                       _addToCart(product);
                                     }
                                   },
-                                  icon: const Icon(Icons.add, size: 16),
-                                  padding: const EdgeInsets.all(4),
+                                  icon: Icon(
+                                    Icons.add,
+                                    size: screenWidth * 0.04,
+                                  ),
+                                  padding: EdgeInsets.all(screenWidth * 0.01),
+                                  constraints: BoxConstraints(
+                                    minWidth: screenWidth * 0.1,
+                                    minHeight: screenWidth * 0.1,
+                                  ),
                                 ),
                               ],
                             ),
@@ -591,7 +682,7 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
 
             if (_cartItems.isNotEmpty)
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(screenWidth * 0.04),
                 decoration: const BoxDecoration(
                   border: Border(
                     top: BorderSide(color: Colors.grey, width: 0.5),
@@ -605,59 +696,68 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Total',
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: screenWidth * 0.035,
                                 color: Colors.grey,
                               ),
                             ),
                             Text(
                               '${_calculateTotal().toStringAsFixed(0)} fcfa',
-                              style: const TextStyle(
-                                fontSize: 22,
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.055,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF1565C0),
+                                color: const Color(0xFF1565C0),
                               ),
                             ),
                           ],
                         ),
                         ElevatedButton.icon(
-                          onPressed: _showOrderConfirmation,
+                          onPressed: () => _showOrderConfirmation(context),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: screenWidth * 0.04,
+                              vertical: screenHeight * 0.015,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15),
                             ),
                           ),
-                          icon: const Icon(Icons.phone, size: 20),
-                          label: const Text(
+                          icon: Icon(Icons.phone, size: screenWidth * 0.05),
+                          label: Text(
                             'Commander',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: screenWidth * 0.035,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: screenHeight * 0.01),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _showOrderConfirmation,
+                        onPressed: () => _showOrderConfirmation(context),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF1565C0),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
                           ),
+                          padding: EdgeInsets.symmetric(
+                            vertical: screenHeight * 0.015,
+                          ),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Voir options de commande',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: screenWidth * 0.035,
+                          ),
                         ),
                       ),
                     ),
@@ -672,14 +772,20 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FDFF),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: const Color(0xFF1565C0),
-        title: const Text(
+        title: Text(
           'Shopping ARA',
-          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20),
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            fontSize: screenWidth * 0.05,
+          ),
         ),
         centerTitle: true,
         shape: const RoundedRectangleBorder(
@@ -690,28 +796,28 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
             children: [
               IconButton(
                 onPressed: _toggleCartVisibility,
-                icon: const Icon(Icons.shopping_cart),
+                icon: Icon(Icons.shopping_cart, size: screenWidth * 0.06),
                 color: Colors.white,
               ),
               if (_cartItems.isNotEmpty)
                 Positioned(
-                  right: 8,
-                  top: 8,
+                  right: screenWidth * 0.02,
+                  top: screenWidth * 0.02,
                   child: Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: EdgeInsets.all(screenWidth * 0.01),
                     decoration: const BoxDecoration(
                       color: Colors.red,
                       shape: BoxShape.circle,
                     ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
+                    constraints: BoxConstraints(
+                      minWidth: screenWidth * 0.04,
+                      minHeight: screenWidth * 0.04,
                     ),
                     child: Text(
                       '${_calculateTotalItems()}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 10,
+                        fontSize: screenWidth * 0.025,
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
@@ -750,15 +856,14 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
 
                     return AnimationLimiter(
                       child: GridView.builder(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(screenWidth * 0.04),
                         itemCount: products.length,
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 12,
-                              mainAxisSpacing: 20,
-                              childAspectRatio: 0.75,
-                            ),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: screenWidth > 600 ? 3 : 2,
+                          crossAxisSpacing: screenWidth * 0.03,
+                          mainAxisSpacing: screenWidth * 0.04,
+                          childAspectRatio: 0.75,
+                        ),
                         itemBuilder: (context, index) {
                           return AnimationConfiguration.staggeredGrid(
                             position: index,
@@ -767,7 +872,10 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
                             child: ScaleAnimation(
                               scale: 0.5,
                               child: FadeInAnimation(
-                                child: _buildProductCard(products[index]),
+                                child: _buildProductCard(
+                                  products[index],
+                                  context,
+                                ),
                               ),
                             ),
                           );
@@ -777,24 +885,31 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
                   },
                 ),
 
-          // Cart Panel
           _buildCartPanel(),
         ],
       ),
 
-      // Bottom button to show cart
       floatingActionButton: _cartItems.isNotEmpty && !_isCartVisible
-          ? FloatingActionButton(
-              onPressed: _toggleCartVisibility,
-              backgroundColor: const Color(0xFF1565C0),
-              foregroundColor: Colors.white,
-              child: const Icon(Icons.shopping_cart),
+          ? Container(
+              margin: EdgeInsets.only(
+                bottom: screenHeight * 0.02,
+                right: screenWidth * 0.04,
+              ),
+              child: FloatingActionButton(
+                onPressed: _toggleCartVisibility,
+                backgroundColor: const Color(0xFF1565C0),
+                foregroundColor: Colors.white,
+                child: Icon(Icons.shopping_cart, size: screenWidth * 0.06),
+              ),
             )
           : null,
     );
   }
 
   Widget _buildLoadingState() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -802,10 +917,13 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
           const CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation(Color(0xFF1565C0)),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: screenHeight * 0.03),
           Text(
             'Chargement des produits...',
-            style: TextStyle(color: Colors.grey[600], fontSize: 16),
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: screenWidth * 0.04,
+            ),
           ),
         ],
       ),
@@ -813,30 +931,47 @@ class _ShoppingSimplePageState extends State<ShoppingSimplePage> {
   }
 
   Widget _buildEmptyState() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.storefront_outlined, size: 80, color: Colors.grey[300]),
-          const SizedBox(height: 20),
-          const Text(
+          Icon(
+            Icons.storefront_outlined,
+            size: screenWidth * 0.2,
+            color: Colors.grey[300],
+          ),
+          SizedBox(height: screenHeight * 0.03),
+          Text(
             'Aucun produit disponible',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: screenWidth * 0.045,
               fontWeight: FontWeight.w600,
               color: Colors.grey,
             ),
           ),
-          const SizedBox(height: 10),
-          const Text('Revenez plus tard', style: TextStyle(color: Colors.grey)),
-          const SizedBox(height: 30),
+          SizedBox(height: screenHeight * 0.02),
+          Text(
+            'Revenez plus tard',
+            style: TextStyle(color: Colors.grey, fontSize: screenWidth * 0.035),
+          ),
+          SizedBox(height: screenHeight * 0.04),
           ElevatedButton(
             onPressed: _initializeData,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF1565C0),
               foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.06,
+                vertical: screenHeight * 0.015,
+              ),
             ),
-            child: const Text('Actualiser'),
+            child: Text(
+              'Actualiser',
+              style: TextStyle(fontSize: screenWidth * 0.04),
+            ),
           ),
         ],
       ),

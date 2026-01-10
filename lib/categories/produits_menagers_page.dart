@@ -47,7 +47,6 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage>
         curve: Curves.easeInOutCubic,
       ),
     );
-    //_animationController.forward();
   }
 
   @override
@@ -97,15 +96,23 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage>
   }
 
   void _showSnackBar(String message, IconData icon, Color color) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: color,
         content: Row(
           children: [
-            Icon(icon, color: Colors.white, size: 20),
-            const SizedBox(width: 12),
+            Icon(icon, color: Colors.white, size: screenWidth * 0.05),
+            SizedBox(width: screenWidth * 0.03),
             Expanded(
-              child: Text(message, style: const TextStyle(color: Colors.white)),
+              child: Text(
+                message,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: screenWidth * 0.035,
+                ),
+              ),
             ),
           ],
         ),
@@ -164,6 +171,7 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
 📅 *Date :* ${DateTime.now().toLocal().toString().split('.')[0]}
 ''';
 
+    // Remplacez <NUMERO> par votre numéro WhatsApp
     final url = Uri.parse(
       'https://wa.me/<NUMERO>?text=${Uri.encodeComponent(message)}',
     );
@@ -181,19 +189,15 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
     setState(() {
       _isExpanded = !_isExpanded;
     });
-    if (_isExpanded) {
-      // Future.delayed(const Duration(milliseconds: 100), () {
-      //   _scrollController.animateTo(
-      //     _scrollController.position.maxScrollExtent,
-      //     duration: const Duration(milliseconds: 500),
-      //     curve: Curves.easeInOut,
-      //   );
-      // });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isSmallPhone = screenWidth < 360;
+    final isTablet = screenWidth > 600;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F9),
       body: _isShowingForm
@@ -203,7 +207,7 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
               slivers: [
                 // AppBar avec dégradé bleu élégant
                 SliverAppBar(
-                  expandedHeight: 180,
+                  expandedHeight: screenHeight * 0.2,
                   floating: false,
                   pinned: true,
                   backgroundColor: Colors.transparent,
@@ -235,14 +239,14 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const SizedBox(height: 40),
+                              SizedBox(height: screenHeight * 0.04),
                               Text(
                                 'PRODUITS MÉNAGERS',
                                 style: TextStyle(
-                                  fontSize: 28,
+                                  fontSize: screenWidth * 0.07,
                                   fontWeight: FontWeight.w800,
                                   color: Colors.white,
-                                  letterSpacing: 3,
+                                  letterSpacing: screenWidth * 0.008,
                                   shadows: [
                                     Shadow(
                                       blurRadius: 10,
@@ -250,16 +254,18 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                     ),
                                   ],
                                 ),
+                                textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 8),
+                              SizedBox(height: screenHeight * 0.01),
                               Text(
                                 'Nettoyage et entretien',
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: screenWidth * 0.035,
                                   color: Colors.white.withOpacity(0.95),
-                                  letterSpacing: 2,
+                                  letterSpacing: screenWidth * 0.005,
                                   fontWeight: FontWeight.w300,
                                 ),
+                                textAlign: TextAlign.center,
                               ),
                             ],
                           ),
@@ -275,10 +281,10 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                     child: FadeTransition(
                       opacity: _opacityAnimation,
                       child: Container(
-                        height: 100,
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
+                        height: screenHeight * 0.12,
+                        margin: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.05,
+                          vertical: screenHeight * 0.01,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -293,15 +299,15 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                           ],
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(20),
+                          padding: EdgeInsets.all(screenWidth * 0.04),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Row(
                                 children: [
                                   Container(
-                                    width: 60,
-                                    height: 60,
+                                    width: screenWidth * 0.15,
+                                    height: screenWidth * 0.15,
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
@@ -311,13 +317,13 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                       ),
                                       borderRadius: BorderRadius.circular(15),
                                     ),
-                                    child: const Icon(
+                                    child: Icon(
                                       Icons.shopping_cart_checkout,
                                       color: Colors.white,
-                                      size: 30,
+                                      size: screenWidth * 0.07,
                                     ),
                                   ),
-                                  const SizedBox(width: 15),
+                                  SizedBox(width: screenWidth * 0.03),
                                   Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -325,16 +331,16 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                     children: [
                                       Text(
                                         '${_cart.length} article${_cart.length > 1 ? 's' : ''}',
-                                        style: const TextStyle(
-                                          fontSize: 16,
+                                        style: TextStyle(
+                                          fontSize: screenWidth * 0.04,
                                           fontWeight: FontWeight.w600,
-                                          color: Color(0xFF006064),
+                                          color: const Color(0xFF006064),
                                         ),
                                       ),
                                       Text(
                                         '${_cart.values.fold<int>(0, (sum, item) => sum + (item['quantity'] as int))} unités',
                                         style: TextStyle(
-                                          fontSize: 13,
+                                          fontSize: screenWidth * 0.03,
                                           color: const Color(
                                             0xFF006064,
                                           ).withOpacity(0.7),
@@ -348,19 +354,19 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Total',
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: screenWidth * 0.03,
                                       color: Colors.grey,
                                     ),
                                   ),
                                   Text(
                                     '${_getTotalPrice().toStringAsFixed(2)}fr',
-                                    style: const TextStyle(
-                                      fontSize: 24,
+                                    style: TextStyle(
+                                      fontSize: screenWidth * 0.055,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFF006064),
+                                      color: const Color(0xFF006064),
                                     ),
                                   ),
                                 ],
@@ -374,7 +380,7 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
 
                 // Grille de produits avec animations en cascade
                 SliverPadding(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.all(screenWidth * 0.04),
                   sliver: StreamBuilder<QuerySnapshot>(
                     stream: productsRef
                         .orderBy('createdAt', descending: true)
@@ -384,8 +390,8 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                         return SliverFillRemaining(
                           child: Center(
                             child: SizedBox(
-                              width: 60,
-                              height: 60,
+                              width: screenWidth * 0.15,
+                              height: screenWidth * 0.15,
                               child: CircularProgressIndicator(
                                 strokeWidth: 3,
                                 valueColor: AlwaysStoppedAnimation(
@@ -405,14 +411,14 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                 Icon(
                                   Icons.error_outline,
                                   color: Colors.grey.shade400,
-                                  size: 60,
+                                  size: screenWidth * 0.15,
                                 ),
-                                const SizedBox(height: 20),
+                                SizedBox(height: screenHeight * 0.02),
                                 Text(
                                   'Erreur de chargement',
                                   style: TextStyle(
                                     color: Colors.grey.shade600,
-                                    fontSize: 16,
+                                    fontSize: screenWidth * 0.04,
                                   ),
                                 ),
                               ],
@@ -430,22 +436,22 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                 Icon(
                                   Icons.cleaning_services_outlined,
                                   color: Colors.grey.shade300,
-                                  size: 80,
+                                  size: screenWidth * 0.2,
                                 ),
-                                const SizedBox(height: 20),
+                                SizedBox(height: screenHeight * 0.03),
                                 Text(
                                   'Aucun produit disponible',
                                   style: TextStyle(
                                     color: Colors.grey.shade500,
-                                    fontSize: 18,
+                                    fontSize: screenWidth * 0.045,
                                   ),
                                 ),
-                                const SizedBox(height: 10),
+                                SizedBox(height: screenHeight * 0.02),
                                 Text(
                                   'Revenez plus tard',
                                   style: TextStyle(
                                     color: Colors.grey.shade400,
-                                    fontSize: 14,
+                                    fontSize: screenWidth * 0.035,
                                   ),
                                 ),
                               ],
@@ -457,10 +463,10 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                       return AnimationLimiter(
                         child: SliverGrid(
                           gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                mainAxisSpacing: 15,
-                                crossAxisSpacing: 15,
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: isTablet ? 3 : 2,
+                                mainAxisSpacing: screenWidth * 0.03,
+                                crossAxisSpacing: screenWidth * 0.03,
                                 childAspectRatio: 0.75,
                               ),
                           delegate: SliverChildBuilderDelegate((
@@ -474,6 +480,7 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                               id: doc.id,
                               product: product,
                               inCart: inCart,
+                              context: context,
                             );
                           }, childCount: items.length),
                         ),
@@ -485,11 +492,11 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                 // Bouton flottant pour le formulaire en bleu
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.all(30),
+                    padding: EdgeInsets.all(screenWidth * 0.05),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 600),
                       curve: Curves.easeInOut,
-                      height: _isExpanded ? null : 60,
+                      height: _isExpanded ? null : screenHeight * 0.08,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(25),
@@ -506,7 +513,7 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                         children: [
                           // Bouton d'expansion en bleu
                           Container(
-                            height: 60,
+                            height: screenHeight * 0.08,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
@@ -524,28 +531,27 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                 onTap: _toggleForm,
                                 borderRadius: BorderRadius.circular(25),
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 25,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: screenWidth * 0.05,
                                   ),
                                   child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      const Row(
+                                      Row(
                                         children: [
                                           Icon(
                                             Icons.shopping_bag_rounded,
                                             color: Colors.white,
-                                            size: 22,
+                                            size: screenWidth * 0.055,
                                           ),
-                                          SizedBox(width: 12),
+                                          SizedBox(width: screenWidth * 0.03),
                                           Text(
                                             'Finaliser la commande',
                                             style: TextStyle(
                                               color: Colors.white,
-                                              fontSize: 16,
+                                              fontSize: screenWidth * 0.04,
                                               fontWeight: FontWeight.w600,
-                                              letterSpacing: 0.5,
                                             ),
                                           ),
                                         ],
@@ -555,10 +561,10 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                           milliseconds: 400,
                                         ),
                                         turns: _isExpanded ? 0.5 : 0,
-                                        child: const Icon(
+                                        child: Icon(
                                           Icons.expand_more,
                                           color: Colors.white,
-                                          size: 28,
+                                          size: screenWidth * 0.07,
                                         ),
                                       ),
                                     ],
@@ -571,10 +577,10 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                           // Formulaire avec animation d'expansion
                           if (_isExpanded)
                             Padding(
-                              padding: const EdgeInsets.all(25),
+                              padding: EdgeInsets.all(screenWidth * 0.05),
                               child: Column(
                                 children: [
-                                  const SizedBox(height: 10),
+                                  SizedBox(height: screenHeight * 0.02),
                                   _buildFormSection(
                                     title: 'Informations personnelles',
                                     icon: Icons.person_outline,
@@ -584,39 +590,42 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                         label: 'Prénom',
                                         icon: Icons.person,
                                       ),
-                                      const SizedBox(height: 12),
+                                      SizedBox(height: screenHeight * 0.015),
                                       _buildInputField(
                                         controller: _nameController,
                                         label: 'Nom',
                                         icon: Icons.person,
                                       ),
-                                      const SizedBox(height: 12),
+                                      SizedBox(height: screenHeight * 0.015),
                                       _buildInputField(
                                         controller: _phoneController,
                                         label: 'Téléphone',
                                         icon: Icons.phone,
                                         keyboardType: TextInputType.phone,
                                       ),
-                                      const SizedBox(height: 12),
+                                      SizedBox(height: screenHeight * 0.015),
                                       _buildInputField(
                                         controller: _quartierController,
                                         label: 'Quartier',
                                         icon: Icons.location_city,
                                       ),
-                                      const SizedBox(height: 12),
+                                      SizedBox(height: screenHeight * 0.015),
                                       _buildInputField(
                                         controller: _villeController,
                                         label: 'Ville',
                                         icon: Icons.place,
                                       ),
                                     ],
+                                    context: context,
                                   ),
-                                  const SizedBox(height: 25),
+                                  SizedBox(height: screenHeight * 0.03),
 
                                   // Récapitulatif de la commande
                                   if (_cart.isNotEmpty)
                                     Container(
-                                      padding: const EdgeInsets.all(20),
+                                      padding: EdgeInsets.all(
+                                        screenWidth * 0.04,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFF5F7F9),
                                         borderRadius: BorderRadius.circular(20),
@@ -629,37 +638,40 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          const Row(
+                                          Row(
                                             children: [
                                               Icon(
                                                 Icons.receipt_long,
-                                                color: Color(0xFF006064),
-                                                size: 22,
+                                                color: const Color(0xFF006064),
+                                                size: screenWidth * 0.055,
                                               ),
-                                              SizedBox(width: 10),
+                                              SizedBox(
+                                                width: screenWidth * 0.025,
+                                              ),
                                               Text(
                                                 'Récapitulatif de commande',
                                                 style: TextStyle(
-                                                  fontSize: 16,
+                                                  fontSize: screenWidth * 0.04,
                                                   fontWeight: FontWeight.w600,
-                                                  color: Color(0xFF006064),
+                                                  color: const Color(
+                                                    0xFF006064,
+                                                  ),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: 20),
+                                          SizedBox(height: screenHeight * 0.02),
                                           ..._cart.entries.map((entry) {
                                             final item = entry.value;
                                             return Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 8,
-                                                  ),
+                                              padding: EdgeInsets.symmetric(
+                                                vertical: screenHeight * 0.01,
+                                              ),
                                               child: Row(
                                                 children: [
                                                   Container(
-                                                    width: 40,
-                                                    height: 40,
+                                                    width: screenWidth * 0.1,
+                                                    height: screenWidth * 0.1,
                                                     decoration: BoxDecoration(
                                                       borderRadius:
                                                           BorderRadius.circular(
@@ -675,10 +687,12 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                                       color: const Color(
                                                         0xFF006064,
                                                       ),
-                                                      size: 20,
+                                                      size: screenWidth * 0.05,
                                                     ),
                                                   ),
-                                                  const SizedBox(width: 12),
+                                                  SizedBox(
+                                                    width: screenWidth * 0.03,
+                                                  ),
                                                   Expanded(
                                                     child: Column(
                                                       crossAxisAlignment:
@@ -687,17 +701,20 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                                       children: [
                                                         Text(
                                                           item['name'],
-                                                          style:
-                                                              const TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w500,
-                                                              ),
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            fontSize:
+                                                                screenWidth *
+                                                                0.035,
+                                                          ),
                                                         ),
                                                         Text(
                                                           '${item['price']}fr / unité',
                                                           style: TextStyle(
-                                                            fontSize: 12,
+                                                            fontSize:
+                                                                screenWidth *
+                                                                0.03,
                                                             color: Colors
                                                                 .grey[600],
                                                           ),
@@ -707,43 +724,53 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                                   ),
                                                   Text(
                                                     '${item['quantity']}x',
-                                                    style: const TextStyle(
+                                                    style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
-                                                      color: Color(0xFF006064),
+                                                      fontSize:
+                                                          screenWidth * 0.035,
+                                                      color: const Color(
+                                                        0xFF006064,
+                                                      ),
                                                     ),
                                                   ),
-                                                  const SizedBox(width: 12),
+                                                  SizedBox(
+                                                    width: screenWidth * 0.03,
+                                                  ),
                                                   Text(
                                                     '${(item['price'] * item['quantity']).toStringAsFixed(2)}fr',
-                                                    style: const TextStyle(
+                                                    style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
+                                                      fontSize:
+                                                          screenWidth * 0.035,
                                                     ),
                                                   ),
                                                 ],
                                               ),
                                             );
                                           }).toList(),
-                                          const Divider(height: 32),
+                                          Divider(height: screenHeight * 0.03),
                                           Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
-                                              const Text(
+                                              Text(
                                                 'Total',
                                                 style: TextStyle(
-                                                  fontSize: 18,
+                                                  fontSize: screenWidth * 0.045,
                                                   fontWeight: FontWeight.bold,
                                                   color: Colors.black87,
                                                 ),
                                               ),
                                               Text(
                                                 '${_getTotalPrice().toStringAsFixed(2)}fr',
-                                                style: const TextStyle(
-                                                  fontSize: 22,
+                                                style: TextStyle(
+                                                  fontSize: screenWidth * 0.055,
                                                   fontWeight: FontWeight.bold,
-                                                  color: Color(0xFF006064),
+                                                  color: const Color(
+                                                    0xFF006064,
+                                                  ),
                                                 ),
                                               ),
                                             ],
@@ -752,10 +779,10 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                       ),
                                     ),
 
-                                  const SizedBox(height: 30),
+                                  SizedBox(height: screenHeight * 0.03),
                                   SizedBox(
                                     width: double.infinity,
-                                    height: 55,
+                                    height: screenHeight * 0.07,
                                     child: ElevatedButton(
                                       onPressed: _sendOrderToWhatsApp,
                                       style: ElevatedButton.styleFrom(
@@ -774,24 +801,30 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                         ).withOpacity(0.4),
                                       ),
                                       child: _isLoading
-                                          ? const SizedBox(
-                                              width: 24,
-                                              height: 24,
+                                          ? SizedBox(
+                                              width: screenWidth * 0.06,
+                                              height: screenWidth * 0.06,
                                               child: CircularProgressIndicator(
                                                 strokeWidth: 2,
                                                 color: Colors.white,
                                               ),
                                             )
-                                          : const Row(
+                                          : Row(
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
                                               children: [
-                                                Icon(Icons.phone, size: 24),
-                                                SizedBox(width: 12),
+                                                Icon(
+                                                  Icons.phone,
+                                                  size: screenWidth * 0.06,
+                                                ),
+                                                SizedBox(
+                                                  width: screenWidth * 0.03,
+                                                ),
                                                 Text(
                                                   'Commander via WhatsApp',
                                                   style: TextStyle(
-                                                    fontSize: 16,
+                                                    fontSize:
+                                                        screenWidth * 0.04,
                                                     fontWeight: FontWeight.w600,
                                                   ),
                                                 ),
@@ -813,11 +846,14 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
   }
 
   Widget _buildPersonalInfoForm() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return CustomScrollView(
       slivers: [
         // AppBar avec bouton retour
         SliverAppBar(
-          expandedHeight: 120,
+          expandedHeight: screenHeight * 0.15,
           floating: false,
           pinned: true,
           backgroundColor: Colors.transparent,
@@ -839,26 +875,31 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                       _isShowingForm = false;
                     });
                   },
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  icon: Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                    size: screenWidth * 0.06,
+                  ),
                 ),
-                const SizedBox(width: 12),
-                const Text(
+                SizedBox(width: screenWidth * 0.02),
+                Text(
                   'Informations personnelles',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
+                    fontSize: screenWidth * 0.04,
                   ),
                 ),
               ],
             ),
-            titlePadding: const EdgeInsets.only(left: 0),
+            titlePadding: EdgeInsets.zero,
             centerTitle: false,
           ),
         ),
 
         // Formulaire détaillé
         SliverPadding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(screenWidth * 0.05),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               _buildFormSection(
@@ -870,39 +911,40 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                     label: 'Prénom',
                     icon: Icons.person,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: screenHeight * 0.02),
                   _buildInputField(
                     controller: _nameController,
                     label: 'Nom',
                     icon: Icons.person,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: screenHeight * 0.02),
                   _buildInputField(
                     controller: _phoneController,
                     label: 'Téléphone',
                     icon: Icons.phone,
                     keyboardType: TextInputType.phone,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: screenHeight * 0.02),
                   _buildInputField(
                     controller: _quartierController,
                     label: 'Quartier',
                     icon: Icons.location_city,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: screenHeight * 0.02),
                   _buildInputField(
                     controller: _villeController,
                     label: 'Ville',
                     icon: Icons.place,
                   ),
                 ],
+                context: context,
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: screenHeight * 0.03),
 
               // Récapitulatif de la commande
               if (_cart.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.all(screenWidth * 0.04),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
@@ -917,34 +959,36 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
                         children: [
                           Icon(
                             Icons.shopping_cart_checkout,
-                            color: Color(0xFF006064),
-                            size: 22,
+                            color: const Color(0xFF006064),
+                            size: screenWidth * 0.055,
                           ),
-                          SizedBox(width: 10),
+                          SizedBox(width: screenWidth * 0.025),
                           Text(
                             'Votre commande',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: screenWidth * 0.045,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF006064),
+                              color: const Color(0xFF006064),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 20),
+                      SizedBox(height: screenHeight * 0.02),
                       ..._cart.entries.map((entry) {
                         final item = entry.value;
                         return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          padding: EdgeInsets.symmetric(
+                            vertical: screenHeight * 0.01,
+                          ),
                           child: Row(
                             children: [
                               Container(
-                                width: 40,
-                                height: 40,
+                                width: screenWidth * 0.1,
+                                height: screenWidth * 0.1,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(8),
                                   color: const Color(
@@ -954,24 +998,25 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                                 child: Icon(
                                   Icons.cleaning_services_rounded,
                                   color: const Color(0xFF006064),
-                                  size: 20,
+                                  size: screenWidth * 0.05,
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(width: screenWidth * 0.03),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       item['name'],
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontWeight: FontWeight.w500,
+                                        fontSize: screenWidth * 0.035,
                                       ),
                                     ),
                                     Text(
                                       '${item['price']}fr / unité',
                                       style: TextStyle(
-                                        fontSize: 12,
+                                        fontSize: screenWidth * 0.03,
                                         color: Colors.grey[600],
                                       ),
                                     ),
@@ -980,40 +1025,42 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                               ),
                               Text(
                                 '${item['quantity']}x',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF006064),
+                                  fontSize: screenWidth * 0.035,
+                                  color: const Color(0xFF006064),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(width: screenWidth * 0.03),
                               Text(
                                 '${(item['price'] * item['quantity']).toStringAsFixed(2)}fr',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
+                                  fontSize: screenWidth * 0.035,
                                 ),
                               ),
                             ],
                           ),
                         );
                       }).toList(),
-                      const Divider(height: 32),
+                      Divider(height: screenHeight * 0.03),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             'Total à payer',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: screenWidth * 0.045,
                               fontWeight: FontWeight.bold,
                               color: Colors.black87,
                             ),
                           ),
                           Text(
                             '${_getTotalPrice().toStringAsFixed(2)}fr',
-                            style: const TextStyle(
-                              fontSize: 22,
+                            style: TextStyle(
+                              fontSize: screenWidth * 0.055,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF006064),
+                              color: const Color(0xFF006064),
                             ),
                           ),
                         ],
@@ -1021,12 +1068,12 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                     ],
                   ),
                 ),
-              const SizedBox(height: 32),
+              SizedBox(height: screenHeight * 0.04),
 
               // Bouton d'envoi
               SizedBox(
                 width: double.infinity,
-                height: 55,
+                height: screenHeight * 0.07,
                 child: ElevatedButton(
                   onPressed: _sendOrderToWhatsApp,
                   style: ElevatedButton.styleFrom(
@@ -1039,23 +1086,23 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                     shadowColor: const Color(0xFF25D366).withOpacity(0.4),
                   ),
                   child: _isLoading
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
+                      ? SizedBox(
+                          width: screenWidth * 0.06,
+                          height: screenWidth * 0.06,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             color: Colors.white,
                           ),
                         )
-                      : const Row(
+                      : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.send, size: 24),
-                            SizedBox(width: 12),
+                            Icon(Icons.send, size: screenWidth * 0.06),
+                            SizedBox(width: screenWidth * 0.03),
                             Text(
                               'Envoyer la commande',
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: screenWidth * 0.04,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -1063,7 +1110,7 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
                         ),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: screenHeight * 0.02),
             ]),
           ),
         ),
@@ -1075,282 +1122,283 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
     required String id,
     required Map<String, dynamic> product,
     required Map<String, dynamic>? inCart,
+    required BuildContext context,
   }) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF006064).withOpacity(0.1),
-              blurRadius: 20,
-              spreadRadius: 2,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image avec effet de superposition
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
-                ),
-                child: Stack(
-                  children: [
-                    Container(
-                      color: const Color(0xFFF5F7F9),
-                      child: product['image'] != null
-                          ? Image.network(
-                              product['image'] ?? defaultImageUrl,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: double.infinity,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        value:
-                                            loadingProgress
-                                                    .expectedTotalBytes !=
-                                                null
-                                            ? loadingProgress
-                                                      .cumulativeBytesLoaded /
-                                                  loadingProgress
-                                                      .expectedTotalBytes!
-                                            : null,
-                                        strokeWidth: 2,
-                                        color: const Color(0xFF006064),
-                                      ),
-                                    );
-                                  },
-                            )
-                          : Center(
-                              child: Icon(
-                                Icons.cleaning_services_rounded,
-                                color: Colors.grey.shade400,
-                                size: 40,
-                              ),
-                            ),
-                    ),
-                    // Overlay gradient bleu
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          colors: [
-                            const Color(0xFF006064).withOpacity(0.2),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                    ),
-                    // Badge de quantité si dans le panier
-                    if (inCart != null)
-                      Positioned(
-                        top: 15,
-                        right: 15,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                const Color(0xFF006064),
-                                const Color(0xFF00838F),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF006064).withOpacity(0.3),
-                                blurRadius: 10,
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            '${inCart['quantity']}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF006064).withOpacity(0.1),
+            blurRadius: 20,
+            spreadRadius: 2,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Image avec effet de superposition
+          Expanded(
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
               ),
-            ),
-            // Détails du produit
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Stack(
                 children: [
-                  Text(
-                    product['name'] ?? '',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF006064),
-                      height: 1.3,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    product['description'] ?? '',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Prix réduit
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '${product['price']?.toStringAsFixed(2) ?? ''}fr',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF006064),
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            'Prix',
-                            style: TextStyle(
-                              fontSize: 9,
-                              color: Colors.grey.shade500,
+                  Container(
+                    color: const Color(0xFFF5F7F9),
+                    child: product['image'] != null
+                        ? Image.network(
+                            product['image'] ?? defaultImageUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value:
+                                      loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                      : null,
+                                  strokeWidth: 2,
+                                  color: const Color(0xFF006064),
+                                ),
+                              );
+                            },
+                          )
+                        : Center(
+                            child: Icon(
+                              Icons.cleaning_services_rounded,
+                              color: Colors.grey.shade400,
+                              size: screenWidth * 0.1,
                             ),
                           ),
+                  ),
+                  // Overlay gradient bleu
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          const Color(0xFF006064).withOpacity(0.2),
+                          Colors.transparent,
                         ],
                       ),
-
-                      // Contrôle de quantité ultra compact
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 2,
-                          vertical: 2,
+                    ),
+                  ),
+                  // Badge de quantité si dans le panier
+                  if (inCart != null)
+                    Positioned(
+                      top: screenWidth * 0.03,
+                      right: screenWidth * 0.03,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.03,
+                          vertical: screenWidth * 0.015,
                         ),
                         decoration: BoxDecoration(
-                          color: inCart == null
-                              ? Colors.transparent
-                              : const Color(0xFF006064).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(30),
-                          border: Border.all(
-                            color: inCart == null
-                                ? Colors.transparent
-                                : const Color(0xFF006064),
-                            width: inCart == null ? 0 : 1.0,
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF006064),
+                              const Color(0xFF00838F),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF006064).withOpacity(0.3),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          '${inCart['quantity']}',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: screenWidth * 0.035,
                           ),
                         ),
-                        child: inCart == null
-                            ? GestureDetector(
-                                onTap: () => _addToCart(id, product),
-                                child: Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        const Color(0xFF006064),
-                                        const Color(0xFF00838F),
-                                      ],
-                                    ),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.add_shopping_cart_rounded,
-                                    color: Colors.white,
-                                    size: 14,
-                                  ),
-                                ),
-                              )
-                            : Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  GestureDetector(
-                                    onTap: () => _removeFromCart(id),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(2),
-                                      decoration: BoxDecoration(
-                                        color: const Color(
-                                          0xFF006064,
-                                        ).withOpacity(0.1),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        Icons.remove_rounded,
-                                        size: 12,
-                                        color: const Color(
-                                          0xFF006064,
-                                        ).withOpacity(0.8),
-                                      ),
-                                    ),
-                                  ),
-
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 4,
-                                    ),
-                                    child: Text(
-                                      '${inCart['quantity']}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                        color: Color(0xFF006064),
-                                      ),
-                                    ),
-                                  ),
-
-                                  GestureDetector(
-                                    onTap: () => _addToCart(id, product),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(2),
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            const Color(0xFF006064),
-                                            const Color(0xFF00838F),
-                                          ],
-                                        ),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.add_rounded,
-                                        size: 12,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
                       ),
-                    ],
-                  ),
-                  //////////////////
+                    ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+          // Détails du produit
+          Padding(
+            padding: EdgeInsets.all(screenWidth * 0.04),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  product['name'] ?? '',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.038,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF006064),
+                    height: 1.3,
+                  ),
+                ),
+                SizedBox(height: screenWidth * 0.02),
+                Text(
+                  product['description'] ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.03,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                SizedBox(height: screenWidth * 0.03),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Prix réduit
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${product['price']?.toStringAsFixed(2) ?? ''}fr',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.033,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF006064),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          'Prix',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.025,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // Contrôle de quantité ultra compact
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.005,
+                        vertical: screenWidth * 0.005,
+                      ),
+                      decoration: BoxDecoration(
+                        color: inCart == null
+                            ? Colors.transparent
+                            : const Color(0xFF006064).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(
+                          color: inCart == null
+                              ? Colors.transparent
+                              : const Color(0xFF006064),
+                          width: inCart == null ? 0 : 1.0,
+                        ),
+                      ),
+                      child: inCart == null
+                          ? GestureDetector(
+                              onTap: () => _addToCart(id, product),
+                              child: Container(
+                                padding: EdgeInsets.all(screenWidth * 0.015),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      const Color(0xFF006064),
+                                      const Color(0xFF00838F),
+                                    ],
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.add_shopping_cart_rounded,
+                                  color: Colors.white,
+                                  size: screenWidth * 0.035,
+                                ),
+                              ),
+                            )
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                GestureDetector(
+                                  onTap: () => _removeFromCart(id),
+                                  child: Container(
+                                    padding: EdgeInsets.all(
+                                      screenWidth * 0.005,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFF006064,
+                                      ).withOpacity(0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.remove_rounded,
+                                      size: screenWidth * 0.03,
+                                      color: const Color(
+                                        0xFF006064,
+                                      ).withOpacity(0.8),
+                                    ),
+                                  ),
+                                ),
+
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: screenWidth * 0.01,
+                                  ),
+                                  child: Text(
+                                    '${inCart['quantity']}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: screenWidth * 0.03,
+                                      color: const Color(0xFF006064),
+                                    ),
+                                  ),
+                                ),
+
+                                GestureDetector(
+                                  onTap: () => _addToCart(id, product),
+                                  child: Container(
+                                    padding: EdgeInsets.all(
+                                      screenWidth * 0.005,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          const Color(0xFF006064),
+                                          const Color(0xFF00838F),
+                                        ],
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.add_rounded,
+                                      size: screenWidth * 0.03,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1359,9 +1407,12 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
     required String title,
     required IconData icon,
     required List<Widget> children,
+    required BuildContext context,
   }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(screenWidth * 0.04),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -1378,19 +1429,23 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
         children: [
           Row(
             children: [
-              Icon(icon, color: const Color(0xFF006064), size: 22),
-              const SizedBox(width: 10),
+              Icon(
+                icon,
+                color: const Color(0xFF006064),
+                size: screenWidth * 0.055,
+              ),
+              SizedBox(width: screenWidth * 0.025),
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: screenWidth * 0.04,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF006064),
+                  color: const Color(0xFF006064),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: screenWidth * 0.05),
           ...children,
         ],
       ),
@@ -1403,6 +1458,8 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
     IconData? icon,
     TextInputType keyboardType = TextInputType.text,
   }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
@@ -1414,25 +1471,29 @@ ${fields.entries.map((e) => '${e.key} : ${e.value}').join('\n')}
         keyboardType: keyboardType,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(
-            color: Color(0xFF006064),
-            fontSize: 14,
+          labelStyle: TextStyle(
+            color: const Color(0xFF006064),
+            fontSize: screenWidth * 0.035,
             fontWeight: FontWeight.w500,
           ),
           border: InputBorder.none,
           prefixIcon: icon != null
-              ? Icon(icon, color: const Color(0xFF006064), size: 20)
+              ? Icon(
+                  icon,
+                  color: const Color(0xFF006064),
+                  size: screenWidth * 0.05,
+                )
               : null,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: screenWidth * 0.04,
+            vertical: screenWidth * 0.04,
           ),
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
         ),
-        style: const TextStyle(
-          fontSize: 15,
-          color: Color(0xFF006064),
+        style: TextStyle(
+          fontSize: screenWidth * 0.038,
+          color: const Color(0xFF006064),
           fontWeight: FontWeight.w500,
         ),
         cursorColor: const Color(0xFF006064),
