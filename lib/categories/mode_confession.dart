@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class ModeConfectionPage extends StatefulWidget {
   final List<String> subcategories;
@@ -14,6 +16,7 @@ class ModeConfectionPage extends StatefulWidget {
 class _ModeConfectionPageState extends State<ModeConfectionPage>
     with SingleTickerProviderStateMixin {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final ImagePicker _imagePicker = ImagePicker();
 
   int selectedCategoryIndex = 0;
   int selectedServiceIndex = 0;
@@ -23,12 +26,18 @@ class _ModeConfectionPageState extends State<ModeConfectionPage>
   bool _isExpanded = false;
   final ScrollController _scrollController = ScrollController();
 
+  // Contrôleurs pour le formulaire
   final TextEditingController nameController = TextEditingController();
   final TextEditingController quartierController = TextEditingController();
   final TextEditingController villeController = TextEditingController();
   final TextEditingController tailleController = TextEditingController();
   final TextEditingController poitrineController = TextEditingController();
   final TextEditingController tailleHancheController = TextEditingController();
+  final TextEditingController detailsController = TextEditingController();
+
+  // Gestion des images
+  List<XFile> _selectedImages = [];
+  List<String> _selectedProductIds = [];
 
   @override
   void initState() {
@@ -78,22 +87,100 @@ class _ModeConfectionPageState extends State<ModeConfectionPage>
         .snapshots();
   }
 
+  Future<void> _pickImages() async {
+    try {
+      final List<XFile> pickedImages = await _imagePicker.pickMultiImage(
+        imageQuality: 85,
+        maxWidth: 1200,
+      );
+
+      if (pickedImages.isNotEmpty) {
+        setState(() {
+          _selectedImages.addAll(pickedImages);
+        });
+      }
+    } catch (e) {
+      _showSnackBar('Erreur lors de la sélection des images');
+    }
+  }
+
+  void _toggleProductSelection(String productId) {
+    setState(() {
+      if (_selectedProductIds.contains(productId)) {
+        _selectedProductIds.remove(productId);
+      } else {
+        _selectedProductIds.add(productId);
+      }
+    });
+  }
+
+  bool _isProductSelected(String productId) {
+    return _selectedProductIds.contains(productId);
+  }
+
+  void _removeImage(int index) {
+    setState(() {
+      _selectedImages.removeAt(index);
+    });
+  }
+
   void _sendWhatsApp() {
+    if (_selectedProductIds.isEmpty && _selectedImages.isEmpty) {
+      _showSnackBar(
+        'Veuillez sélectionner au moins un produit ou ajouter une image',
+      );
+      return;
+    }
+
+    if (nameController.text.isEmpty || villeController.text.isEmpty) {
+      _showSnackBar('Veuillez remplir les informations personnelles');
+      return;
+    }
+
     final String message =
         """
 Bonjour, je souhaite commander un vêtement sur mesure.
 
-📝 Mesures:
+📦 **Produits sélectionnés:** ${_selectedProductIds.length} produit(s)
+
+👤 **Informations personnelles:**
+- Nom: ${nameController.text}
+- Quartier: ${quartierController.text}
+- Ville: ${villeController.text}
+
+📏 **Mesures:**
 - Taille: ${tailleController.text}
 - Poitrine: ${poitrineController.text}
 - Taille/Hanche: ${tailleHancheController.text}
 
-👤 Infos personnelles:
-- Nom: ${nameController.text}
-- Quartier: ${quartierController.text}
-- Ville: ${villeController.text}
+📝 **Détails supplémentaires:**
+${detailsController.text.isNotEmpty ? detailsController.text : "Aucun détail supplémentaire"}
+
+🖼️ **Images jointes:** ${_selectedImages.length} image(s)
+
+🎯 **Service:** ${services[selectedServiceIndex]}
+📁 **Catégorie:** ${widget.subcategories[selectedCategoryIndex]}
 """;
+
     Share.share(message);
+
+    // Réinitialiser la sélection après l'envoi
+    setState(() {
+      _selectedProductIds.clear();
+      _selectedImages.clear();
+      detailsController.clear();
+    });
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color(0xFF004D40),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 
   void _toggleForm() {
@@ -185,6 +272,63 @@ Bonjour, je souhaite commander un vêtement sur mesure.
               ),
             ),
           ),
+
+          // Indicateur de sélection
+          if (_selectedProductIds.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Container(
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [const Color(0xFF004D40), const Color(0xFF00796B)],
+                  ),
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF004D40).withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.check_circle,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          '${_selectedProductIds.length} produit(s) sélectionné(s)',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_selectedProductIds.isNotEmpty)
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedProductIds.clear();
+                          });
+                        },
+                        icon: const Icon(Icons.clear, color: Colors.white),
+                      ),
+                  ],
+                ),
+              ),
+            ),
 
           // Catégories en vert
           SliverToBoxAdapter(
@@ -439,6 +583,7 @@ Bonjour, je souhaite commander un vêtement sur mesure.
                         ),
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final item = items[index].data() as Map<String, dynamic>;
+                      final itemId = items[index].id;
                       return AnimationConfiguration.staggeredGrid(
                         position: index,
                         duration: const Duration(milliseconds: 500),
@@ -446,7 +591,7 @@ Bonjour, je souhaite commander un vêtement sur mesure.
                         child: ScaleAnimation(
                           scale: 0.5,
                           child: FadeInAnimation(
-                            child: _buildProductCard(item),
+                            child: _buildProductCard(item, itemId),
                           ),
                         ),
                       );
@@ -544,7 +689,146 @@ Bonjour, je souhaite commander un vêtement sur mesure.
                         padding: const EdgeInsets.all(25),
                         child: Column(
                           children: [
-                            const SizedBox(height: 10),
+                            // Section Images téléchargées
+                            _buildFormSection(
+                              title: 'Images de référence',
+                              icon: Icons.photo_library,
+                              children: [
+                                Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    SizedBox(
+                                      height: 50,
+                                      child: ElevatedButton.icon(
+                                        onPressed: _pickImages,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(
+                                            0xFFE0F2F1,
+                                          ),
+                                          foregroundColor: const Color(
+                                            0xFF004D40,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                          elevation: 0,
+                                        ),
+                                        icon: const Icon(
+                                          Icons.add_photo_alternate,
+                                          size: 22,
+                                        ),
+                                        label: const Text(
+                                          'Ajouter des images',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 15),
+                                    if (_selectedImages.isNotEmpty)
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '${_selectedImages.length} image(s) sélectionnée(s)',
+                                            style: const TextStyle(
+                                              color: Color(0xFF004D40),
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 10),
+                                          SizedBox(
+                                            height: 100,
+                                            child: ListView.builder(
+                                              scrollDirection: Axis.horizontal,
+                                              itemCount: _selectedImages.length,
+                                              itemBuilder: (context, index) {
+                                                return Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        right: 10,
+                                                      ),
+                                                  child: Stack(
+                                                    children: [
+                                                      Container(
+                                                        width: 100,
+                                                        height: 100,
+                                                        decoration: BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                10,
+                                                              ),
+                                                          border: Border.all(
+                                                            color: const Color(
+                                                              0xFF004D40,
+                                                            ),
+                                                            width: 2,
+                                                          ),
+                                                        ),
+                                                        child: ClipRRect(
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                8,
+                                                              ),
+                                                          child: Image.file(
+                                                            File(
+                                                              _selectedImages[index]
+                                                                  .path,
+                                                            ),
+                                                            fit: BoxFit.cover,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Positioned(
+                                                        top: 5,
+                                                        right: 5,
+                                                        child: GestureDetector(
+                                                          onTap: () =>
+                                                              _removeImage(
+                                                                index,
+                                                              ),
+                                                          child: Container(
+                                                            decoration:
+                                                                BoxDecoration(
+                                                                  color: Colors
+                                                                      .red,
+                                                                  borderRadius:
+                                                                      BorderRadius.circular(
+                                                                        10,
+                                                                      ),
+                                                                ),
+                                                            child: const Icon(
+                                                              Icons.close,
+                                                              color:
+                                                                  Colors.white,
+                                                              size: 18,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 25),
+
+                            // Section Informations personnelles
                             _buildFormSection(
                               title: 'Informations personnelles',
                               icon: Icons.person_outline,
@@ -568,7 +852,10 @@ Bonjour, je souhaite commander un vêtement sur mesure.
                                 ),
                               ],
                             ),
+
                             const SizedBox(height: 25),
+
+                            // Section Mesures personnelles
                             _buildFormSection(
                               title: 'Mesures personnelles',
                               icon: Icons.straighten,
@@ -596,37 +883,111 @@ Bonjour, je souhaite commander un vêtement sur mesure.
                               ],
                             ),
 
-                            const SizedBox(height: 30),
-                            SizedBox(
-                              width: double.infinity,
-                              height: 55,
-                              child: ElevatedButton(
-                                onPressed: _sendWhatsApp,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF25D366),
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15),
-                                  ),
-                                  elevation: 5,
-                                  shadowColor: const Color(
-                                    0xFF25D366,
-                                  ).withOpacity(0.4),
-                                ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.phone, size: 24),
-                                    SizedBox(width: 12),
-                                    Text(
-                                      'WhatsApp',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
+                            const SizedBox(height: 25),
+
+                            // Section Détails supplémentaires
+                            _buildFormSection(
+                              title: 'Détails supplémentaires',
+                              icon: Icons.description,
+                              children: [
+                                TextField(
+                                  controller: detailsController,
+                                  maxLines: 4,
+                                  decoration: InputDecoration(
+                                    hintText:
+                                        'Décrivez vos besoins spécifiques...',
+                                    hintStyle: TextStyle(
+                                      color: Colors.grey.shade500,
+                                      fontSize: 14,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: const BorderSide(
+                                        color: Color(0xFFE0F2F1),
                                       ),
                                     ),
-                                  ],
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: const BorderSide(
+                                        color: Color(0xFF004D40),
+                                        width: 2,
+                                      ),
+                                    ),
+                                    contentPadding: const EdgeInsets.all(16),
+                                  ),
                                 ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 30),
+
+                            // Bouton WhatsApp avec compteurs
+                            Container(
+                              padding: const EdgeInsets.all(15),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF25D366).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(15),
+                                border: Border.all(
+                                  color: const Color(
+                                    0xFF25D366,
+                                  ).withOpacity(0.3),
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      _buildCounterItem(
+                                        'Produits',
+                                        _selectedProductIds.length,
+                                      ),
+                                      _buildCounterItem(
+                                        'Images',
+                                        _selectedImages.length,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 15),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 55,
+                                    child: ElevatedButton(
+                                      onPressed: _sendWhatsApp,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(
+                                          0xFF25D366,
+                                        ),
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            15,
+                                          ),
+                                        ),
+                                        elevation: 5,
+                                        shadowColor: const Color(
+                                          0xFF25D366,
+                                        ).withOpacity(0.4),
+                                      ),
+                                      child: const Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.phone, size: 24),
+                                          SizedBox(width: 12),
+                                          Text(
+                                            'commander',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -642,164 +1003,214 @@ Bonjour, je souhaite commander un vêtement sur mesure.
     );
   }
 
-  Widget _buildProductCard(Map<String, dynamic> item) {
+  Widget _buildProductCard(Map<String, dynamic> item, String itemId) {
+    final isSelected = _isProductSelected(itemId);
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF004D40).withOpacity(0.1),
-              blurRadius: 20,
-              spreadRadius: 2,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image avec effet de superposition
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
-                ),
-                child: Stack(
-                  children: [
-                    Container(
-                      color: const Color(0xFFF5F7F9),
-                      child: item['imageUrl'] != null
-                          ? Image.network(
-                              item['imageUrl'],
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: double.infinity,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        value:
-                                            loadingProgress
-                                                    .expectedTotalBytes !=
-                                                null
-                                            ? loadingProgress
-                                                      .cumulativeBytesLoaded /
-                                                  loadingProgress
-                                                      .expectedTotalBytes!
-                                            : null,
-                                        strokeWidth: 2,
-                                        color: const Color(0xFF004D40),
-                                      ),
-                                    );
-                                  },
-                            )
-                          : Center(
-                              child: Icon(
-                                Icons.photo_camera_back,
-                                color: Colors.grey.shade400,
-                                size: 40,
-                              ),
-                            ),
-                    ),
-                    // Overlay gradient vert
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          colors: [
-                            const Color(0xFF004D40).withOpacity(0.2),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                    ),
-                    // Badge de prix en vert
-                    Positioned(
-                      top: 15,
-                      right: 15,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              const Color(0xFF004D40),
-                              const Color(0xFF00796B),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF004D40).withOpacity(0.3),
-                              blurRadius: 10,
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          '${item['price'] ?? 0}€',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+      child: GestureDetector(
+        onTap: () => _toggleProductSelection(itemId),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: isSelected
+                    ? const Color(0xFF004D40).withOpacity(0.3)
+                    : const Color(0xFF004D40).withOpacity(0.1),
+                blurRadius: isSelected ? 25 : 20,
+                spreadRadius: isSelected ? 3 : 2,
+                offset: const Offset(0, 10),
               ),
+            ],
+            border: Border.all(
+              color: isSelected ? const Color(0xFF004D40) : Colors.transparent,
+              width: isSelected ? 3 : 0,
             ),
-            // Détails du produit
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
+          ),
+          child: Stack(
+            children: [
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    item['name'] ?? '',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF004D40),
-                      height: 1.3,
+                  // Image avec effet de superposition
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(17),
+                      ),
+                      child: Stack(
+                        children: [
+                          Container(
+                            color: const Color(0xFFF5F7F9),
+                            child: item['imageUrl'] != null
+                                ? Image.network(
+                                    item['imageUrl'],
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                          if (loadingProgress == null)
+                                            return child;
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              value:
+                                                  loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        loadingProgress
+                                                            .expectedTotalBytes!
+                                                  : null,
+                                              strokeWidth: 2,
+                                              color: const Color(0xFF004D40),
+                                            ),
+                                          );
+                                        },
+                                  )
+                                : Center(
+                                    child: Icon(
+                                      Icons.photo_camera_back,
+                                      color: Colors.grey.shade400,
+                                      size: 40,
+                                    ),
+                                  ),
+                          ),
+                          // Overlay gradient vert
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [
+                                  const Color(0xFF004D40).withOpacity(0.2),
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
+                          ),
+                          // Badge de prix en vert
+                          Positioned(
+                            top: 15,
+                            right: 15,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    const Color(0xFF004D40),
+                                    const Color(0xFF00796B),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFF004D40,
+                                    ).withOpacity(0.3),
+                                    blurRadius: 10,
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                '${item['price'] ?? 0}€',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE0F2F1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: const Color(0xFFB2DFDB),
-                        width: 1,
-                      ),
-                    ),
-                    child: const Text(
-                      'Sur mesure',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF004D40),
-                        fontWeight: FontWeight.w500,
-                      ),
+                  // Détails du produit
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item['name'] ?? '',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected
+                                ? const Color(0xFF004D40)
+                                : const Color(0xFF004D40),
+                            height: 1.3,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color(0xFF004D40)
+                                : const Color(0xFFE0F2F1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isSelected
+                                  ? const Color(0xFF004D40)
+                                  : const Color(0xFFB2DFDB),
+                              width: isSelected ? 2 : 1,
+                            ),
+                          ),
+                          child: Text(
+                            isSelected ? '✓ Sélectionné' : 'Sélectionner',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color(0xFF004D40),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
+              // Badge de sélection
+              if (isSelected)
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF004D40),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF004D40).withOpacity(0.5),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -862,7 +1273,9 @@ Bonjour, je souhaite commander un vêtement sur mesure.
             fontWeight: FontWeight.w500,
           ),
           border: InputBorder.none,
-          prefixIcon: Icon(icon, color: const Color(0xFF004D40), size: 20),
+          prefixIcon: icon != null
+              ? Icon(icon, color: const Color(0xFF004D40), size: 20)
+              : null,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 16,
@@ -877,6 +1290,37 @@ Bonjour, je souhaite commander un vêtement sur mesure.
         ),
         cursorColor: const Color(0xFF004D40),
       ),
+    );
+  }
+
+  Widget _buildCounterItem(String label, int count) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey.shade600,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: count > 0 ? const Color(0xFF004D40) : Colors.grey.shade300,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            count.toString(),
+            style: TextStyle(
+              color: count > 0 ? Colors.white : Colors.grey.shade600,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -420,35 +420,6 @@ class HomeScreen extends StatelessWidget {
                       color: Color(0xFF00695C),
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: const Color(0xFF4DB6AC).withOpacity(0.3),
-                        width: 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 5,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: const Text(
-                      'Voir tout',
-                      style: TextStyle(
-                        color: Color(0xFF00695C),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -481,33 +452,6 @@ class HomeScreen extends StatelessWidget {
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFF00695C),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF2196F3), Color(0xFF4DB6AC)],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF2196F3).withOpacity(0.3),
-                          blurRadius: 5,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: const Text(
-                      'Voir tout',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
                     ),
                   ),
                 ],
@@ -676,7 +620,7 @@ class HomeScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '${product.price.toStringAsFixed(2)} €',
+                      '${product.price.toStringAsFixed(2)} frs',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -954,7 +898,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Prix max: ${_priceRange.toStringAsFixed(0)} €'),
+                    Text('Prix max: ${_priceRange.toStringAsFixed(0)} frs'),
                     Slider(
                       value: _priceRange,
                       min: 0,
@@ -1069,7 +1013,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
               const Spacer(), // Pousse le prix en bas
               Text(
-                '${product.price.toStringAsFixed(2)} €',
+                '${product.price.toStringAsFixed(2)} frs',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 10,
@@ -2417,7 +2361,7 @@ class ProductDetailScreen extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  '${product.price.toStringAsFixed(2)} €',
+                  '${product.price.toStringAsFixed(2)} frs',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -2495,7 +2439,7 @@ class CheckoutScreen extends StatelessWidget {
                   children: [
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [Text('Sous-total'), Text('199.98 €')],
+                      children: [Text('Sous-total'), Text('199.98 frs')],
                     ),
                     const SizedBox(height: 8),
                     const Row(
@@ -2516,7 +2460,7 @@ class CheckoutScreen extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '${total.toStringAsFixed(2)} €',
+                          '${total.toStringAsFixed(2)} frs',
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -2670,7 +2614,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '${total.toStringAsFixed(2)} €',
+                            '${total.toStringAsFixed(2)} frs',
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
