@@ -534,17 +534,6 @@ class _PressingAdminPageState extends State<PressingPage> {
                               height: 1.1,
                             ),
                           ).animate().fadeIn(delay: 200.ms),
-
-                          const SizedBox(height: 6),
-
-                          Text(
-                            'Nettoyage professionnel & retouches expertes',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white.withOpacity(0.9),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ).animate().fadeIn(delay: 400.ms),
                         ],
                       ),
                     ],

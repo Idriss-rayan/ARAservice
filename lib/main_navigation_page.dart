@@ -60,6 +60,24 @@ class CartItem {
   double get totalPrice => product.price * quantity;
 }
 
+// Créer une classe TextStyles responsive
+class ResponsiveText {
+  static TextStyle title(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    return TextStyle(
+      fontSize: width * 0.06,
+      fontWeight: FontWeight.w800,
+      color: const Color(0xFF00695C),
+      letterSpacing: 0.5,
+    );
+  }
+
+  static TextStyle body(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    return TextStyle(fontSize: width * 0.04, fontWeight: FontWeight.normal);
+  }
+}
+
 // Données fictives pour l'application
 final List<Product> allProducts = [
   Product(
@@ -223,7 +241,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFE8F5F4),
+      backgroundColor: const Color(0xFFE8F5F4),
       //extendBody: true, // permet l'effet flottant
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: Container(
@@ -263,18 +281,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 icon: Icon(Icons.home_rounded),
                 label: 'Accueil',
               ),
-              // BottomNavigationBarItem(
-              //   icon: Icon(Icons.grid_view_rounded),
-              //   label: 'Catégories',
-              // ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.search_rounded),
                 label: 'Recherche',
               ),
-              // BottomNavigationBarItem(
-              //   icon: Icon(Icons.shopping_cart_rounded),
-              //   label: 'Panier',
-              // ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.person_rounded),
                 label: 'Compte',
@@ -295,15 +305,20 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isSmallPhone = screenWidth < 360;
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text(
+        title: Text(
           'ARA Service',
           style: TextStyle(
             fontWeight: FontWeight.w700,
-            fontSize: 22,
+            fontSize: screenWidth * 0.06,
             letterSpacing: 0.5,
+            color: Colors.white,
           ),
         ),
         centerTitle: true,
@@ -313,10 +328,7 @@ class HomeScreen extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF00695C), // Vert foncé
-                Color(0xFF2196F3), // Bleu vif
-              ],
+              colors: [Color(0xFF00695C), Color(0xFF2196F3)],
             ),
             boxShadow: [
               BoxShadow(
@@ -333,61 +345,43 @@ class HomeScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFF8FDFF), // Bleu très clair
-              Color(0xFFF0F9F8), // Vert très clair
-              Color(0xFFE8F5F4), // Vert clair moyen
-            ],
+            colors: [Color(0xFFF8FDFF), Color(0xFFF0F9F8), Color(0xFFE8F5F4)],
             stops: [0.0, 0.5, 1.0],
           ),
         ),
         child: SingleChildScrollView(
           physics: const ClampingScrollPhysics(),
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(screenWidth * 0.05),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Bannière de bienvenue
-              //DashboardWelcomeContainer(),
-              DashboardCarousel(),
-              const SizedBox(height: 28),
-              // Catégories principales
-              const Text(
-                'Catégories',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF00695C),
-                  letterSpacing: 0.5,
-                ),
-              ),
-
-              const SizedBox(height: 16),
+              const DashboardCarousel(),
+              SizedBox(height: screenHeight * 0.03),
+              Text('Catégories', style: ResponsiveText.title(context)),
+              SizedBox(height: screenHeight * 0.02),
 
               GridView.count(
-                crossAxisCount: 2,
+                crossAxisCount: screenWidth > 600 ? 3 : 2,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                childAspectRatio: 1.6,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
+                childAspectRatio: screenWidth < 360 ? 1.3 : 1.6,
+                mainAxisSpacing: screenWidth * 0.04,
+                crossAxisSpacing: screenWidth * 0.04,
                 children: [
                   _buildCategoryCard(
                     context,
                     'Shopping',
                     Icons.shopping_basket_rounded,
                     const [Color(0xFF1565C0), Color(0xFF2196F3)],
-                    0, // Passer l'index 0 pour Shopping
+                    0,
                   ),
-
                   _buildCategoryCard(
                     context,
                     'Produits ménagers',
                     Icons.clean_hands_rounded,
                     const [Color(0xFF00838F), Color(0xFF00BCD4)],
-                    1, // Passer l'index
+                    1,
                   ),
-
                   _buildCategoryCard(
                     context,
                     'Pressing',
@@ -395,7 +389,6 @@ class HomeScreen extends StatelessWidget {
                     const [Color(0xFF00796B), Color(0xFF4DB6AC)],
                     2,
                   ),
-
                   _buildCategoryCard(
                     context,
                     'Mode & Confection',
@@ -406,26 +399,12 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
 
-              const SizedBox(height: 28),
-
-              // Produits populaires
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Produits populaires',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF00695C),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
+              SizedBox(height: screenHeight * 0.04),
+              Text('Produits populaires', style: ResponsiveText.title(context)),
+              SizedBox(height: screenHeight * 0.02),
 
               SizedBox(
-                height: 240,
+                height: screenWidth * 0.7,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
@@ -440,26 +419,12 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 28),
-
-              // Nouveautés
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Nouveautés',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF00695C),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
+              SizedBox(height: screenHeight * 0.04),
+              Text('Nouveautés', style: ResponsiveText.title(context)),
+              SizedBox(height: screenHeight * 0.02),
 
               SizedBox(
-                height: 240,
+                height: screenWidth * 0.7,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
@@ -485,74 +450,72 @@ class HomeScreen extends StatelessWidget {
     String title,
     IconData icon,
     List<Color> gradientColors,
-    int index, // Ajouter l'index comme paramètre
+    int index,
   ) {
-    return SizedBox(
-      height: 110,
-      child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15),
-            gradient: LinearGradient(
-              colors: gradientColors,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          gradient: LinearGradient(
+            colors: gradientColors,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(15),
-            onTap: () {
-              final category =
-                  categories[index]; // index est maintenant disponible
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(15),
+          onTap: () {
+            final category = categories[index];
+            Widget page;
 
-              Widget page;
-              switch (category.name) {
-                case 'Shopping':
-                  page = ShoppingSimplePage();
-                  break;
-                case 'Produits ménagers':
-                  page = ProduitsMenagersPage();
-                  break;
-                case 'Mode & Confection':
-                  page = ModeConfectionPage(
-                    subcategories: category.subcategories,
-                  );
-                  break;
-                case 'Pressing':
-                  page = PressingPage(categoryName: category.name);
-                  break;
-                default:
-                  page = ShoppingSimplePage();
-              }
+            switch (category.name) {
+              case 'Shopping':
+                page = const ShoppingSimplePage();
+                break;
+              case 'Produits ménagers':
+                page = const ProduitsMenagersPage();
+                break;
+              case 'Mode & Confection':
+                page = ModeConfectionPage(
+                  subcategories: category.subcategories,
+                );
+                break;
+              case 'Pressing':
+                page = PressingPage(categoryName: category.name);
+                break;
+              default:
+                page = const ShoppingSimplePage();
+            }
 
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => page),
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(icon, size: 36, color: Colors.white),
-                  const SizedBox(height: 8),
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => page),
+            );
+          },
+          child: Padding(
+            padding: EdgeInsets.all(screenWidth * 0.03),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: screenWidth * 0.1, color: Colors.white),
+                SizedBox(height: screenWidth * 0.02),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.030,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
                   ),
-                ],
-              ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
         ),
@@ -561,9 +524,12 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildProductCard(BuildContext context, Product product) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final cardWidth = screenWidth * 0.45;
+
     return Container(
-      width: 170, // Augmenté de 160 à 170
-      margin: const EdgeInsets.only(right: 16),
+      width: cardWidth,
+      margin: EdgeInsets.only(right: screenWidth * 0.04),
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -577,34 +543,32 @@ class HomeScreen extends StatelessWidget {
             );
           },
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(screenWidth * 0.03),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Image container avec hauteur fixe
                 Container(
-                  height: 100,
+                  height: screenWidth * 0.3,
                   decoration: BoxDecoration(
                     color: const Color(0xFFE0F2F1),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(screenWidth * 0.02),
                   ),
                   child: Center(
                     child: Icon(
                       Icons.image,
-                      size: 60,
+                      size: screenWidth * 0.15,
                       color: const Color(0xFF00695C).withOpacity(0.5),
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                // Nom du produit avec hauteur fixe
+                SizedBox(height: screenWidth * 0.02),
                 SizedBox(
-                  height: 40, // Hauteur fixe pour 2 lignes
+                  height: screenWidth * 0.12,
                   child: Text(
                     product.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      fontSize: 14,
+                      fontSize: screenWidth * 0.035,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -613,33 +577,36 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   product.category,
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: screenWidth * 0.03,
+                  ),
                 ),
-                const Spacer(), // Pousse le prix en bas
+                const Spacer(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       '${product.price.toStringAsFixed(2)} frs',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Color(0xFF00695C),
+                        fontSize: screenWidth * 0.04,
+                        color: const Color(0xFF00695C),
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ), // Padding augmenté
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.02,
+                        vertical: screenWidth * 0.01,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF4DB6AC),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.add_shopping_cart,
                         color: Colors.white,
-                        size: 18,
+                        size: screenWidth * 0.045,
                       ),
                     ),
                   ],
@@ -659,11 +626,16 @@ class CategoriesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Catégories',
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: screenWidth * 0.05,
+          ),
         ),
         elevation: 0,
         backgroundColor: const Color(0xFF00695C),
@@ -673,19 +645,16 @@ class CategoriesScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFE0F2F1), // Vert très clair
-              Color(0xFFF5F5F5), // Gris très léger pour le contraste
-            ],
+            colors: [Color(0xFFE0F2F1), Color(0xFFF5F5F5)],
           ),
         ),
         child: ListView.builder(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(screenWidth * 0.05),
           itemCount: categories.length,
           itemBuilder: (context, index) {
             final category = categories[index];
             return Container(
-              margin: const EdgeInsets.only(bottom: 16),
+              margin: EdgeInsets.only(bottom: screenWidth * 0.04),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: [
@@ -701,67 +670,65 @@ class CategoriesScreen extends StatelessWidget {
                 child: Material(
                   color: Colors.white,
                   child: ExpansionTile(
-                    tilePadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
+                    tilePadding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.05,
+                      vertical: screenWidth * 0.03,
                     ),
                     leading: Container(
-                      width: 44,
-                      height: 44,
+                      width: screenWidth * 0.11,
+                      height: screenWidth * 0.11,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
+                        gradient: const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [
-                            const Color(0xFF00695C),
-                            const Color(0xFF4DB6AC),
-                          ],
+                          colors: [Color(0xFF00695C), Color(0xFF4DB6AC)],
                         ),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(category.icon, color: Colors.white, size: 22),
+                      child: Icon(
+                        category.icon,
+                        color: Colors.white,
+                        size: screenWidth * 0.055,
+                      ),
                     ),
                     title: Text(
                       category.name,
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.045,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF00695C),
+                        color: const Color(0xFF00695C),
                       ),
                     ),
                     trailing: Container(
-                      width: 30,
-                      height: 30,
+                      width: screenWidth * 0.08,
+                      height: screenWidth * 0.08,
                       decoration: BoxDecoration(
                         color: const Color(0xFFE0F2F1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.expand_more,
-                        color: Color(0xFF00695C),
-                        size: 18,
+                        color: const Color(0xFF00695C),
+                        size: screenWidth * 0.05,
                       ),
                     ),
                     children: category.subcategories.map((subcategory) {
                       return Container(
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
-                            colors: [
-                              const Color(0xFFF8FDFC),
-                              const Color(0xFFE8F5F4),
-                            ],
+                            colors: [Color(0xFFF8FDFC), Color(0xFFE8F5F4)],
                           ),
                         ),
                         child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 40,
-                            vertical: 10,
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.1,
+                            vertical: screenWidth * 0.025,
                           ),
                           leading: Container(
-                            width: 8,
-                            height: 8,
+                            width: screenWidth * 0.02,
+                            height: screenWidth * 0.02,
                             decoration: BoxDecoration(
                               color: const Color(0xFF4DB6AC),
                               shape: BoxShape.circle,
@@ -769,15 +736,15 @@ class CategoriesScreen extends StatelessWidget {
                           ),
                           title: Text(
                             subcategory,
-                            style: const TextStyle(
-                              fontSize: 15,
+                            style: TextStyle(
+                              fontSize: screenWidth * 0.04,
                               fontWeight: FontWeight.w500,
-                              color: Color(0xFF37474F),
+                              color: const Color(0xFF37474F),
                             ),
                           ),
                           trailing: Container(
-                            width: 28,
-                            height: 28,
+                            width: screenWidth * 0.07,
+                            height: screenWidth * 0.07,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topLeft,
@@ -789,10 +756,10 @@ class CategoriesScreen extends StatelessWidget {
                               ),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.chevron_right,
-                              color: Color(0xFF4DB6AC),
-                              size: 16,
+                              color: const Color(0xFF4DB6AC),
+                              size: screenWidth * 0.04,
                             ),
                           ),
                           onTap: () {
@@ -824,119 +791,129 @@ class _SearchScreenState extends State<SearchScreen> {
   String _searchQuery = '';
   List<Product> _filteredProducts = allProducts;
   String _selectedCategory = 'Toutes';
-  double _priceRange = 200.0;
+  double _priceRange = 200;
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Recherche')),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Rechercher un produit...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                filled: true,
-                fillColor: Colors.grey[50],
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                  _filterProducts();
-                });
-              },
-            ),
-          ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isPortrait = constraints.maxHeight > constraints.maxWidth;
+          final crossAxisCount = isPortrait
+              ? (constraints.maxWidth > 600 ? 3 : 2)
+              : (constraints.maxWidth > 900 ? 4 : 3);
 
-          // Filtres
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              children: [
-                // Dropdown avec largeur fixe
-                SizedBox(
-                  width: double.infinity, // Prend toute la largeur
-                  child: DropdownButtonFormField<String>(
-                    value: _selectedCategory,
-                    decoration: InputDecoration(
-                      labelText: 'Catégorie',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 16,
+          return Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.all(screenWidth * 0.04),
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Rechercher un produit...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[50],
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                      _filterProducts();
+                    });
+                  },
+                ),
+              ),
+
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: DropdownButtonFormField<String>(
+                        value: _selectedCategory,
+                        decoration: InputDecoration(
+                          labelText: 'Catégorie',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.03,
+                            vertical: screenWidth * 0.04,
+                          ),
+                        ),
+                        isExpanded: true,
+                        items: ['Toutes', ...categories.map((cat) => cat.name)]
+                            .map((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(
+                                  value,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              );
+                            })
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedCategory = value!;
+                            _filterProducts();
+                          });
+                        },
                       ),
                     ),
-                    isExpanded: true, // Important pour éviter l'overflow
-                    items: ['Toutes', ...categories.map((cat) => cat.name)].map(
-                      (String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(
-                            value,
-                            overflow:
-                                TextOverflow.ellipsis, // Gère les textes longs
-                          ),
-                        );
-                      },
-                    ).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedCategory = value!;
-                        _filterProducts();
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Prix max: ${_priceRange.toStringAsFixed(0)} frs'),
-                    Slider(
-                      value: _priceRange,
-                      min: 0,
-                      max: 500,
-                      divisions: 10,
-                      onChanged: (value) {
-                        setState(() {
-                          _priceRange = value;
-                          _filterProducts();
-                        });
-                      },
+                    SizedBox(height: screenWidth * 0.04),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Prix max: ${_priceRange.toStringAsFixed(0)} frs',
+                          style: TextStyle(fontSize: screenWidth * 0.04),
+                        ),
+                        Slider(
+                          value: _priceRange,
+                          min: 0,
+                          max: 500,
+                          divisions: 10,
+                          onChanged: (value) {
+                            setState(() {
+                              _priceRange = value;
+                              _filterProducts();
+                            });
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio:
-                    0.8, // Changé de 0.75 à 0.8 pour plus d'espace
               ),
-              itemCount: _filteredProducts.length,
-              itemBuilder: (context, index) {
-                final product = _filteredProducts[index];
-                return _buildSearchProductCard(context, product);
-              },
-            ),
-          ),
-        ],
+
+              SizedBox(height: screenWidth * 0.04),
+
+              Expanded(
+                child: GridView.builder(
+                  padding: EdgeInsets.all(screenWidth * 0.04),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: screenWidth * 0.04,
+                    mainAxisSpacing: screenWidth * 0.04,
+                    childAspectRatio: isPortrait ? 0.8 : 1.2,
+                  ),
+                  itemCount: _filteredProducts.length,
+                  itemBuilder: (context, index) {
+                    final product = _filteredProducts[index];
+                    return _buildSearchProductCard(context, product);
+                  },
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -959,6 +936,8 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildSearchProductCard(BuildContext context, Product product) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -972,13 +951,12 @@ class _SearchScreenState extends State<SearchScreen> {
           );
         },
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.all(screenWidth * 0.03),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image container
               Container(
-                height: 110, // Réduit de 120 à 110
+                height: screenWidth * 0.3,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: const Color(0xFFE0F2F1),
@@ -987,37 +965,39 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: Center(
                   child: Icon(
                     Icons.image,
-                    size: 60,
+                    size: screenWidth * 0.15,
                     color: const Color(0xFF00695C).withOpacity(0.5),
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              // Nom du produit avec hauteur fixe
+              SizedBox(height: screenWidth * 0.02),
               SizedBox(
-                height: 40, // Hauteur fixe pour 2 lignes
+                height: screenWidth * 0.12,
                 child: Text(
                   product.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    fontSize: 14,
+                    fontSize: screenWidth * 0.035,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: screenWidth * 0.01),
               Text(
                 product.category,
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: screenWidth * 0.03,
+                ),
               ),
-              const Spacer(), // Pousse le prix en bas
+              const Spacer(),
               Text(
                 '${product.price.toStringAsFixed(2)} frs',
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 10,
-                  color: Color(0xFF00695C),
+                  fontSize: screenWidth * 0.04,
+                  color: const Color(0xFF00695C),
                 ),
               ),
             ],
@@ -1027,8 +1007,6 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 }
-
-// ÉCRAN 4 : PANIER
 
 // ÉCRAN 5 : COMPTE
 class AccountScreen extends StatefulWidget {
@@ -1073,7 +1051,6 @@ class _AccountScreenState extends State<AccountScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                /// ICÔNE
                 Container(
                   width: 64,
                   height: 64,
@@ -1087,10 +1064,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     size: 32,
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
-                /// TITRE
                 const Text(
                   'Déconnexion',
                   style: TextStyle(
@@ -1099,10 +1073,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     color: Colors.black87,
                   ),
                 ),
-
                 const SizedBox(height: 8),
-
-                /// TEXTE
                 Text(
                   'Êtes-vous sûr de vouloir vous déconnecter ?',
                   textAlign: TextAlign.center,
@@ -1112,13 +1083,9 @@ class _AccountScreenState extends State<AccountScreen> {
                     height: 1.4,
                   ),
                 ),
-
                 const SizedBox(height: 28),
-
-                /// BOUTONS
                 Row(
                   children: [
-                    /// ANNULER
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(context),
@@ -1139,18 +1106,13 @@ class _AccountScreenState extends State<AccountScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(width: 12),
-
-                    /// CONFIRMER
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () async {
                           await GoogleSignIn().signOut();
                           await FirebaseAuth.instance.signOut();
-
                           if (!context.mounted) return;
-
                           Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(builder: (_) => const AuthPage()),
@@ -1250,21 +1212,19 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
-  // -----------------------
-  // AUTH (Connexion / Inscription) - Avec ListView
-  // -----------------------
   Widget _buildAuth() {
     final TextEditingController _emailController = TextEditingController();
     final TextEditingController _passwordController = TextEditingController();
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(screenWidth * 0.04),
       children: [
-        const SizedBox(height: 40),
+        SizedBox(height: screenWidth * 0.1),
         Center(
           child: Container(
-            width: 120,
-            height: 120,
+            width: screenWidth * 0.3,
+            height: screenWidth * 0.3,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFFE8F5F2), Color(0xFFD1E9E4)],
@@ -1277,14 +1237,14 @@ class _AccountScreenState extends State<AccountScreen> {
                 width: 2,
               ),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.person_outlined,
-              size: 60,
-              color: Color(0xFF2E8B57),
+              size: screenWidth * 0.15,
+              color: const Color(0xFF2E8B57),
             ),
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: screenWidth * 0.06),
         const Center(
           child: Text(
             'Bienvenue',
@@ -1296,16 +1256,15 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: screenWidth * 0.02),
         const Center(
           child: Text(
             'Connectez-vous à votre compte',
             style: TextStyle(fontSize: 16, color: Color(0xFF5A716B)),
           ),
         ),
-        const SizedBox(height: 40),
+        SizedBox(height: screenWidth * 0.1),
 
-        // Email
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -1338,9 +1297,8 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: screenWidth * 0.04),
 
-        // Mot de passe
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -1373,9 +1331,8 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: screenWidth * 0.06),
 
-        // Se connecter
         Container(
           width: double.infinity,
           height: 56,
@@ -1425,14 +1382,13 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
         ),
 
-        const SizedBox(height: 20),
+        SizedBox(height: screenWidth * 0.05),
 
-        // Séparateur
         Row(
           children: [
             Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
               child: Text(
                 'ou',
                 style: TextStyle(color: Colors.grey[500], fontSize: 14),
@@ -1442,9 +1398,8 @@ class _AccountScreenState extends State<AccountScreen> {
           ],
         ),
 
-        const SizedBox(height: 20),
+        SizedBox(height: screenWidth * 0.05),
 
-        // Créer un compte
         Container(
           width: double.infinity,
           height: 56,
@@ -1496,11 +1451,10 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
         ),
 
-        const SizedBox(height: 30),
+        SizedBox(height: screenWidth * 0.08),
 
-        // Options supplémentaires
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(screenWidth * 0.04),
           decoration: BoxDecoration(
             color: const Color(0xFFF8FDFC),
             borderRadius: BorderRadius.circular(16),
@@ -1527,10 +1481,9 @@ class _AccountScreenState extends State<AccountScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: screenWidth * 0.03),
               TextButton(
                 onPressed: () {
-                  // Mot de passe oublié
                   _showPasswordResetDialog(context, _emailController);
                 },
                 style: TextButton.styleFrom(
@@ -1555,7 +1508,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: screenWidth * 0.02),
               TextButton(
                 onPressed: () {
                   // Contact support
@@ -1589,405 +1542,298 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
-  // -----------------------
-  // COMPTE CONNECTÉ - Avec ListView
-  // -----------------------
   Widget _buildAccount(User user) {
-    return Column(
-      children: [
-        // En-tête du profil
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFE8F5F2), Color(0xFFD1E9E4)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: const Color(0xFF2E8B57).withOpacity(0.2),
-              width: 1.5,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFF2E8B57),
-                  border: Border.all(color: Colors.white, width: 3),
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return SingleChildScrollView(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: MediaQuery.of(context).size.height,
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.all(screenWidth * 0.05),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFE8F5F2), Color(0xFFD1E9E4)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                child: user.photoURL != null
-                    ? ClipOval(
-                        child: Image.network(
-                          user.photoURL!,
-                          width: 70,
-                          height: 70,
-                          fit: BoxFit.cover,
-                        ),
-                      )
-                    : const Icon(
-                        Icons.person_rounded,
-                        size: 32,
-                        color: Colors.white,
-                      ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFF2E8B57).withOpacity(0.2),
+                  width: 1.5,
+                ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      user.displayName ?? 'Utilisateur',
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A3C34),
-                      ),
+              child: Row(
+                children: [
+                  Container(
+                    width: screenWidth * 0.18,
+                    height: screenWidth * 0.18,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF2E8B57),
+                      border: Border.all(color: Colors.white, width: 3),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      user.email ?? '',
-                      style: const TextStyle(
-                        color: Color(0xFF5A716B),
-                        fontSize: 14,
-                      ),
-                    ),
-                    if (user.emailVerified)
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
+                    child: user.photoURL != null
+                        ? ClipOval(
+                            child: Image.network(
+                              user.photoURL!,
+                              fit: BoxFit.cover,
                             ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF2E8B57).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
+                          )
+                        : Icon(
+                            Icons.person_rounded,
+                            size: screenWidth * 0.08,
+                            color: Colors.white,
+                          ),
+                  ),
+                  SizedBox(width: screenWidth * 0.04),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user.displayName ?? 'Utilisateur',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.05,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1A3C34),
+                          ),
+                        ),
+                        SizedBox(height: screenWidth * 0.01),
+                        Text(
+                          user.email ?? '',
+                          style: TextStyle(
+                            color: const Color(0xFF5A716B),
+                            fontSize: screenWidth * 0.035,
+                          ),
+                        ),
+                        if (user.emailVerified)
+                          Padding(
+                            padding: EdgeInsets.only(top: screenWidth * 0.01),
+                            child: Row(
                               children: [
-                                Icon(
-                                  Icons.verified_rounded,
-                                  size: 12,
-                                  color: Color(0xFF2E8B57),
-                                ),
-                                SizedBox(width: 4),
-                                Text(
-                                  'Vérifié',
-                                  style: TextStyle(
-                                    color: Color(0xFF2E8B57),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: screenWidth * 0.02,
+                                    vertical: screenWidth * 0.005,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(
+                                      0xFF2E8B57,
+                                    ).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(
+                                      screenWidth * 0.03,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.verified_rounded,
+                                        size: screenWidth * 0.03,
+                                        color: const Color(0xFF2E8B57),
+                                      ),
+                                      SizedBox(width: screenWidth * 0.01),
+                                      Text(
+                                        'Vérifié',
+                                        style: TextStyle(
+                                          color: const Color(0xFF2E8B57),
+                                          fontSize: screenWidth * 0.03,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ],
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        // Liste des sections avec ListView
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            children: [
-              // Section: Informations personnelles
-              _buildSectionHeader(
-                icon: Icons.info_outline_rounded,
-                title: 'Informations personnelles',
-              ),
-              const SizedBox(height: 12),
-
-              _buildInfoTile(
-                icon: Icons.email_rounded,
-                title: 'Adresse email',
-                value: user.email ?? 'Non défini',
-                isVerified: user.emailVerified,
-              ),
-
-              // if (user.phoneNumber != null)
-              //   _buildInfoTile(
-              //     icon: Icons.phone_android_rounded,
-              //     title: 'Téléphone',
-              //     value: user.phoneNumber!,
-              //   ),
-
-              // _buildInfoTile(
-              //   icon: Icons.fingerprint_rounded,
-              //   title: 'Identifiant',
-              //   value: 'UID: ${user.uid.substring(0, 12)}...',
-              // ),
-              _buildInfoTile(
-                icon: Icons.calendar_month_rounded,
-                title: 'Compte créé',
-                value: user.metadata.creationTime != null
-                    ? 'Le ${user.metadata.creationTime!.day}/${user.metadata.creationTime!.month}/${user.metadata.creationTime!.year}'
-                    : 'Date inconnue',
-              ),
-
-              //const SizedBox(height: 24),
-
-              // // Section: Préférences
-              // _buildSectionHeader(
-              //   icon: Icons.settings_outlined,
-              //   title: 'Préférences',
-              // ),
-              // const SizedBox(height: 12),
-
-              // _buildMenuItem(
-              //   icon: Icons.history_rounded,
-              //   title: 'Historique des commandes',
-              //   onTap: () {},
-              // ),
-
-              // _buildMenuItem(
-              //   icon: Icons.notifications_active_rounded,
-              //   title: 'Notifications',
-              //   onTap: () {},
-              // ),
-
-              // _buildMenuItem(
-              //   icon: Icons.security_rounded,
-              //   title: 'Sécurité',
-              //   onTap: () {},
-              // ),
-
-              // _buildMenuItem(
-              //   icon: Icons.privacy_tip_rounded,
-              //   title: 'Confidentialité',
-              //   onTap: () {},
-              // ),
-
-              // _buildMenuItem(
-              //   icon: Icons.language_rounded,
-              //   title: 'Langue',
-              //   subtitle: 'Français',
-              //   onTap: () {},
-              // ),
-
-              // _buildMenuItem(
-              //   icon: Icons.help_outline_rounded,
-              //   title: 'Centre d\'aide',
-              //   onTap: () {},
-              // ),
-              const SizedBox(height: 24),
-
-              // Section: Actions
-              _buildSectionHeader(icon: Icons.tune_rounded, title: 'Actions'),
-              const SizedBox(height: 12),
-
-              // Container(
-              //   decoration: BoxDecoration(
-              //     color: Colors.white,
-              //     borderRadius: BorderRadius.circular(14),
-              //     border: Border.all(
-              //       color: const Color(0xFFE0E0E0),
-              //       width: 1.5,
-              //     ),
-              //   ),
-              //   child: Column(
-              //     children: [
-              //       ListTile(
-              //         leading: Container(
-              //           width: 40,
-              //           height: 40,
-              //           decoration: BoxDecoration(
-              //             color: const Color(0xFF4CAF50).withOpacity(0.1),
-              //             borderRadius: BorderRadius.circular(10),
-              //           ),
-              //           child: const Icon(
-              //             Icons.upgrade_rounded,
-              //             color: Color(0xFF4CAF50),
-              //             size: 20,
-              //           ),
-              //         ),
-              //         title: const Text(
-              //           'Mettre à niveau le compte',
-              //           style: TextStyle(
-              //             color: Color(0xFF1A3C34),
-              //             fontSize: 15,
-              //             fontWeight: FontWeight.w500,
-              //           ),
-              //         ),
-              //         trailing: Container(
-              //           padding: const EdgeInsets.symmetric(
-              //             horizontal: 12,
-              //             vertical: 6,
-              //           ),
-              //           decoration: BoxDecoration(
-              //             color: const Color(0xFF4CAF50).withOpacity(0.1),
-              //             borderRadius: BorderRadius.circular(20),
-              //           ),
-              //           child: const Text(
-              //             'PRO',
-              //             style: TextStyle(
-              //               color: Color(0xFF4CAF50),
-              //               fontSize: 12,
-              //               fontWeight: FontWeight.w700,
-              //             ),
-              //           ),
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-              const SizedBox(height: 12),
-
-              // Bouton Déconnexion
-              Container(
-                width: double.infinity,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: const Color(0xFFF44336).withOpacity(0.3),
-                    width: 1.5,
-                  ),
-                ),
-                child: TextButton(
-                  onPressed: () {
-                    showLogoutDialog(context);
-                  },
-
-                  style: TextButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      ],
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.logout_rounded,
-                        color: Color(0xFFF44336),
-                        size: 20,
-                      ),
-                      SizedBox(width: 10),
-                      Text(
-                        'Se déconnecter',
-                        style: TextStyle(
-                          color: Color(0xFFF44336),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                ],
               ),
+            ),
+            SizedBox(height: screenWidth * 0.05),
 
-              const SizedBox(height: 32),
-
-              // Informations légales
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8FDFC),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: const Color(0xFFE8F5F2),
-                    width: 1.5,
-                  ),
+            ListView(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+              children: [
+                _buildSectionHeader(
+                  icon: Icons.info_outline_rounded,
+                  title: 'Informations personnelles',
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'ARA Service',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF2E8B57),
+                SizedBox(height: screenWidth * 0.03),
+
+                _buildInfoTile(
+                  icon: Icons.email_rounded,
+                  title: 'Adresse email',
+                  value: user.email ?? 'Non défini',
+                  isVerified: user.emailVerified,
+                ),
+
+                _buildInfoTile(
+                  icon: Icons.calendar_month_rounded,
+                  title: 'Compte créé',
+                  value: user.metadata.creationTime != null
+                      ? 'Le ${user.metadata.creationTime!.day}/${user.metadata.creationTime!.month}/${user.metadata.creationTime!.year}'
+                      : 'Date inconnue',
+                ),
+
+                SizedBox(height: screenWidth * 0.06),
+
+                _buildSectionHeader(icon: Icons.tune_rounded, title: 'Actions'),
+                SizedBox(height: screenWidth * 0.03),
+
+                Container(
+                  width: double.infinity,
+                  height: screenWidth * 0.14,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: const Color(0xFFF44336).withOpacity(0.3),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: TextButton(
+                    onPressed: () {
+                      showLogoutDialog(context);
+                    },
+                    style: TextButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Version 1.0.0',
-                      style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '© 2024 ARA Service. Tous droits réservés.',
-                      style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        TextButton(
-                          onPressed: () {},
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero,
-                          ),
-                          child: Text(
-                            'Conditions d\'utilisation',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey[600],
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
+                        Icon(
+                          Icons.logout_rounded,
+                          color: const Color(0xFFF44336),
+                          size: screenWidth * 0.05,
                         ),
-                        const SizedBox(width: 16),
-                        TextButton(
-                          onPressed: () {},
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero,
-                          ),
-                          child: Text(
-                            'Politique de confidentialité',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey[600],
-                              decoration: TextDecoration.underline,
-                            ),
+                        SizedBox(width: screenWidth * 0.025),
+                        Text(
+                          'Se déconnecter',
+                          style: TextStyle(
+                            color: const Color(0xFFF44336),
+                            fontSize: screenWidth * 0.04,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
+
+                SizedBox(height: screenWidth * 0.08),
+
+                Container(
+                  padding: EdgeInsets.all(screenWidth * 0.04),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FDFC),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: const Color(0xFFE8F5F2),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'ARA Service',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF2E8B57),
+                        ),
+                      ),
+                      SizedBox(height: screenWidth * 0.02),
+                      Text(
+                        'Version 1.0.0',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.03,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      SizedBox(height: screenWidth * 0.01),
+                      Text(
+                        '© 2024 ARA Service. Tous droits réservés.',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.03,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      SizedBox(height: screenWidth * 0.03),
+                      Row(
+                        children: [
+                          TextButton(
+                            onPressed: () {},
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                            ),
+                            child: Text(
+                              'Conditions d\'utilisation',
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.03,
+                                color: Colors.grey[600],
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: screenWidth * 0.04),
+                          TextButton(
+                            onPressed: () {},
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                            ),
+                            child: Text(
+                              'Politique de confidentialité',
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.03,
+                                color: Colors.grey[600],
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: screenWidth * 0.05),
+              ],
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
-  // -----------------------
-  // WIDGETS RÉUTILISABLES
-  // -----------------------
-
   Widget _buildSectionHeader({required IconData icon, required String title}) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFF2E8B57), size: 18),
-          const SizedBox(width: 8),
+          Icon(icon, color: const Color(0xFF2E8B57), size: screenWidth * 0.045),
+          SizedBox(width: screenWidth * 0.02),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 16,
+            style: TextStyle(
+              fontSize: screenWidth * 0.045,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF1A3C34),
+              color: const Color(0xFF1A3C34),
             ),
           ),
         ],
@@ -2001,8 +1847,10 @@ class _AccountScreenState extends State<AccountScreen> {
     required String value,
     bool isVerified = false,
   }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: EdgeInsets.only(bottom: screenWidth * 0.025),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -2010,19 +1858,23 @@ class _AccountScreenState extends State<AccountScreen> {
       ),
       child: ListTile(
         leading: Container(
-          width: 40,
-          height: 40,
+          width: screenWidth * 0.1,
+          height: screenWidth * 0.1,
           decoration: BoxDecoration(
             color: const Color(0xFF2E8B57).withOpacity(0.1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: const Color(0xFF2E8B57), size: 20),
+          child: Icon(
+            icon,
+            color: const Color(0xFF2E8B57),
+            size: screenWidth * 0.05,
+          ),
         ),
         title: Text(
           title,
-          style: const TextStyle(
-            color: Color(0xFF1A3C34),
-            fontSize: 15,
+          style: TextStyle(
+            color: const Color(0xFF1A3C34),
+            fontSize: screenWidth * 0.04,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -2031,30 +1883,36 @@ class _AccountScreenState extends State<AccountScreen> {
           children: [
             Text(
               value,
-              style: const TextStyle(color: Color(0xFF5A716B), fontSize: 13),
+              style: TextStyle(
+                color: const Color(0xFF5A716B),
+                fontSize: screenWidth * 0.035,
+              ),
             ),
-            if (isVerified) const SizedBox(height: 4),
+            if (isVerified) SizedBox(height: screenWidth * 0.01),
             if (isVerified)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.02,
+                  vertical: screenWidth * 0.005,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF4CAF50).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(screenWidth * 0.025),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       Icons.verified_rounded,
-                      size: 10,
-                      color: Color(0xFF4CAF50),
+                      size: screenWidth * 0.025,
+                      color: const Color(0xFF4CAF50),
                     ),
-                    SizedBox(width: 4),
+                    SizedBox(width: screenWidth * 0.01),
                     Text(
                       'Email vérifié',
                       style: TextStyle(
-                        color: Color(0xFF4CAF50),
-                        fontSize: 10,
+                        color: const Color(0xFF4CAF50),
+                        fontSize: screenWidth * 0.03,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -2066,57 +1924,6 @@ class _AccountScreenState extends State<AccountScreen> {
       ),
     );
   }
-
-  Widget _buildMenuItem({
-    required IconData icon,
-    required String title,
-    String? subtitle,
-    VoidCallback? onTap,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE0E0E0), width: 1.5),
-      ),
-      child: ListTile(
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: const Color(0xFF2E8B57).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: const Color(0xFF2E8B57), size: 20),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            color: Color(0xFF1A3C34),
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        subtitle: subtitle != null
-            ? Text(
-                subtitle,
-                style: const TextStyle(color: Color(0xFF5A716B), fontSize: 13),
-              )
-            : null,
-        trailing: const Icon(
-          Icons.chevron_right_rounded,
-          color: Color(0xFF5A716B),
-          size: 20,
-        ),
-        onTap: onTap,
-      ),
-    );
-  }
-
-  // -----------------------
-  // DIALOGS
-  // -----------------------
 
   void _showErrorDialog(BuildContext context, String title, String message) {
     showDialog(
@@ -2310,18 +2117,20 @@ class ProductDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Détails du produit'),
         automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(screenWidth * 0.04),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              height: 250,
+              height: screenWidth * 0.6,
               decoration: BoxDecoration(
                 color: const Color(0xFFE0F2F1),
                 borderRadius: BorderRadius.circular(12),
@@ -2329,23 +2138,26 @@ class ProductDetailScreen extends StatelessWidget {
               child: Center(
                 child: Icon(
                   Icons.image,
-                  size: 150,
+                  size: screenWidth * 0.3,
                   color: const Color(0xFF00695C).withOpacity(0.5),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: screenWidth * 0.05),
             Text(
               product.name,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: screenWidth * 0.06,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: screenWidth * 0.02),
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.03,
+                    vertical: screenWidth * 0.015,
                   ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF4DB6AC),
@@ -2353,34 +2165,41 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   child: Text(
                     product.category,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w500,
+                      fontSize: screenWidth * 0.035,
                     ),
                   ),
                 ),
                 const Spacer(),
                 Text(
                   '${product.price.toStringAsFixed(2)} frs',
-                  style: const TextStyle(
-                    fontSize: 24,
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.06,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF00695C),
+                    color: const Color(0xFF00695C),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            const Text(
+            SizedBox(height: screenWidth * 0.05),
+            Text(
               'Description',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: screenWidth * 0.05,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: screenWidth * 0.02),
             Text(
               product.description,
-              style: const TextStyle(fontSize: 16, color: Colors.black87),
+              style: TextStyle(
+                fontSize: screenWidth * 0.04,
+                color: Colors.black87,
+              ),
             ),
-            const SizedBox(height: 30),
+            SizedBox(height: screenWidth * 0.08),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -2390,14 +2209,17 @@ class ProductDetailScreen extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF00695C),
-                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  padding: EdgeInsets.symmetric(vertical: screenWidth * 0.04),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Ajouter au panier',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.045,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -2416,55 +2238,60 @@ class CheckoutScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Paiement'),
         automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(screenWidth * 0.04),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Récapitulatif de la commande',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: screenWidth * 0.05,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: screenWidth * 0.04),
             Card(
               elevation: 3,
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(screenWidth * 0.04),
                 child: Column(
                   children: [
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [Text('Sous-total'), Text('199.98 frs')],
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: screenWidth * 0.02),
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [Text('Livraison'), Text('Gratuite')],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: screenWidth * 0.04),
                     Divider(color: Colors.grey[300]),
-                    const SizedBox(height: 16),
+                    SizedBox(height: screenWidth * 0.04),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Total',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: screenWidth * 0.05,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
                           '${total.toStringAsFixed(2)} frs',
-                          style: const TextStyle(
-                            fontSize: 20,
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.05,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF00695C),
+                            color: const Color(0xFF00695C),
                           ),
                         ),
                       ],
@@ -2473,12 +2300,15 @@ class CheckoutScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 30),
-            const Text(
+            SizedBox(height: screenWidth * 0.08),
+            Text(
               'Moyen de paiement',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: screenWidth * 0.05,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: screenWidth * 0.04),
             Column(
               children: [
                 _buildPaymentMethod(
@@ -2488,7 +2318,7 @@ class CheckoutScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 30),
+            SizedBox(height: screenWidth * 0.08),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -2502,14 +2332,17 @@ class CheckoutScreen extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF00695C),
-                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  padding: EdgeInsets.symmetric(vertical: screenWidth * 0.04),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Confirmer le paiement',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.045,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -2549,6 +2382,8 @@ class OrderConfirmationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Confirmation'),
@@ -2556,75 +2391,78 @@ class OrderConfirmationScreen extends StatelessWidget {
       ),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: EdgeInsets.all(screenWidth * 0.08),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 100,
-                height: 100,
+                width: screenWidth * 0.25,
+                height: screenWidth * 0.25,
                 decoration: BoxDecoration(
                   color: const Color(0xFFE0F2F1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.check,
-                  size: 60,
-                  color: Color(0xFF00695C),
+                  size: screenWidth * 0.15,
+                  color: const Color(0xFF00695C),
                 ),
               ),
-              const SizedBox(height: 32),
-              const Text(
+              SizedBox(height: screenWidth * 0.08),
+              Text(
                 'Commande confirmée !',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: screenWidth * 0.07,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF00695C),
+                  color: const Color(0xFF00695C),
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
-              const Text(
+              SizedBox(height: screenWidth * 0.04),
+              Text(
                 'Votre commande a été prise en compte avec succès.',
-                style: TextStyle(fontSize: 16, color: Colors.black87),
+                style: TextStyle(
+                  fontSize: screenWidth * 0.04,
+                  color: Colors.black87,
+                ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: screenWidth * 0.02),
               Text(
                 'N° de commande: #${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}',
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: screenWidth * 0.04,
                   fontWeight: FontWeight.w600,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: screenWidth * 0.06),
               Card(
                 elevation: 3,
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(screenWidth * 0.04),
                   child: Column(
                     children: [
                       const Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [Text('Montant total'), Text('Livraison')],
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: screenWidth * 0.02),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             '${total.toStringAsFixed(2)} frs',
-                            style: const TextStyle(
-                              fontSize: 20,
+                            style: TextStyle(
+                              fontSize: screenWidth * 0.05,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF00695C),
+                              color: const Color(0xFF00695C),
                             ),
                           ),
-                          const Text(
+                          Text(
                             'Gratuite',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: screenWidth * 0.04,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -2634,37 +2472,39 @@ class OrderConfirmationScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: screenWidth * 0.08),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Retour à l'accueil
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF00695C),
-                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    padding: EdgeInsets.symmetric(vertical: screenWidth * 0.04),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Retour à l\'accueil',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.045,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: screenWidth * 0.04),
               TextButton(
                 onPressed: () {
                   // Suivre la commande
                 },
-                child: const Text(
+                child: Text(
                   'Suivre ma commande',
                   style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF00695C),
+                    fontSize: screenWidth * 0.04,
+                    color: const Color(0xFF00695C),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
