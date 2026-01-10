@@ -5,21 +5,26 @@ import 'package:araservice/categories/pressing_page.dart'
 import 'package:araservice/categories/produits_menagers_page.dart';
 import 'package:araservice/categories/shopping_page.dart';
 import 'package:araservice/components/dashboard_carousel.dart';
+import 'package:araservice/prod_fireb.dart';
+import 'package:araservice/search_screen.dart';
+import 'package:araservice/service_search.dart' hide FirestoreService;
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 // Modèle de produit
+// Modèle de produit - Mise à jour pour correspondre à Firestore
 class Product {
   final String id;
   final String name;
   final String category;
   final String description;
   final double price;
-  final String imageUrl;
+  final String? imageUrl;
   final bool isPopular;
   final bool isNew;
+  final DateTime? createdAt;
 
   Product({
     required this.id,
@@ -27,10 +32,39 @@ class Product {
     required this.category,
     required this.description,
     required this.price,
-    required this.imageUrl,
+    this.imageUrl,
     this.isPopular = false,
     this.isNew = false,
+    this.createdAt,
   });
+
+  // Factory constructor pour créer un Product depuis Firestore
+  factory Product.fromFirestore(Map<String, dynamic> data, String id) {
+    return Product(
+      id: id,
+      name: data['name'] ?? '',
+      category: data['category'] ?? 'Shopping', // Vous devrez ajouter ce champ
+      description: data['description'] ?? '', // Vous devrez ajouter ce champ
+      price: (data['price'] ?? 0).toDouble(),
+      imageUrl: data['imageUrl'],
+      isPopular: data['isPopular'] ?? false, // Vous devrez ajouter ce champ
+      isNew: data['isNew'] ?? false, // Vous devrez ajouter ce champ
+      createdAt: data['createdAt']?.toDate(),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'category': category,
+      'description': description,
+      'price': price,
+      'imageUrl': imageUrl,
+      'isPopular': isPopular,
+      'isNew': isNew,
+      'createdAt': createdAt,
+    };
+  }
 }
 
 // Modèle de catégorie
@@ -298,14 +332,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 // ÉCRAN 1 : ACCUEIL
 class HomeScreen extends StatelessWidget {
   final List<CartItem> cartItems;
+  final FirestoreService firestoreService = FirestoreService();
 
-  const HomeScreen({super.key, required this.cartItems});
+  HomeScreen({super.key, required this.cartItems});
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    final isSmallPhone = screenWidth < 360;
 
     return Scaffold(
       appBar: AppBar(
@@ -401,40 +435,93 @@ class HomeScreen extends StatelessWidget {
               Text('Produits populaires', style: ResponsiveText.title(context)),
               SizedBox(height: screenHeight * 0.02),
 
-              SizedBox(
-                height: screenWidth * 0.7,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: allProducts.where((p) => p.isPopular).length,
-                  itemBuilder: (context, index) {
-                    final popularProducts = allProducts
-                        .where((p) => p.isPopular)
-                        .toList();
-                    final product = popularProducts[index];
-                    return _buildProductCard(context, product);
-                  },
-                ),
-              ),
+              StreamBuilder<List<Product>>(
+                stream: firestoreService.getPopularProducts(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return SizedBox(
+                      height: screenWidth * 0.7,
+                      child: const Center(child: CircularProgressIndicator()),
+                    );
+                  }
 
+                  if (snapshot.hasError) {
+                    return SizedBox(
+                      height: screenWidth * 0.7,
+                      child: Center(child: Text('Erreur: ${snapshot.error}')),
+                    );
+                  }
+
+                  final popularProducts = snapshot.data ?? [];
+
+                  if (popularProducts.isEmpty) {
+                    return SizedBox(
+                      height: screenWidth * 0.7,
+                      child: const Center(
+                        child: Text('Aucun produit populaire disponible'),
+                      ),
+                    );
+                  }
+
+                  return SizedBox(
+                    height: screenWidth * 0.7,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: popularProducts.length,
+                      itemBuilder: (context, index) {
+                        final product = popularProducts[index];
+                        return _buildProductCard(context, product);
+                      },
+                    ),
+                  );
+                },
+              ),
               SizedBox(height: screenHeight * 0.04),
               Text('Nouveautés', style: ResponsiveText.title(context)),
               SizedBox(height: screenHeight * 0.02),
 
-              SizedBox(
-                height: screenWidth * 0.7,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: allProducts.where((p) => p.isNew).length,
-                  itemBuilder: (context, index) {
-                    final newProducts = allProducts
-                        .where((p) => p.isNew)
-                        .toList();
-                    final product = newProducts[index];
-                    return _buildProductCard(context, product);
-                  },
-                ),
+              StreamBuilder<List<Product>>(
+                stream: firestoreService.getNewProducts(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return SizedBox(
+                      height: screenWidth * 0.7,
+                      child: const Center(child: CircularProgressIndicator()),
+                    );
+                  }
+
+                  if (snapshot.hasError) {
+                    return SizedBox(
+                      height: screenWidth * 0.7,
+                      child: Center(child: Text('Erreur: ${snapshot.error}')),
+                    );
+                  }
+
+                  final newProducts = snapshot.data ?? [];
+
+                  if (newProducts.isEmpty) {
+                    return SizedBox(
+                      height: screenWidth * 0.7,
+                      child: const Center(
+                        child: Text('Aucun nouveau produit disponible'),
+                      ),
+                    );
+                  }
+
+                  return SizedBox(
+                    height: screenWidth * 0.7,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: newProducts.length,
+                      itemBuilder: (context, index) {
+                        final product = newProducts[index];
+                        return _buildProductCard(context, product);
+                      },
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -778,223 +865,6 @@ class CategoriesScreen extends StatelessWidget {
 }
 
 // ÉCRAN 3 : RECHERCHE
-class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
-
-  @override
-  State<SearchScreen> createState() => _SearchScreenState();
-}
-
-class _SearchScreenState extends State<SearchScreen> {
-  String _searchQuery = '';
-  List<Product> _filteredProducts = allProducts;
-  String _selectedCategory = 'Toutes';
-  double _priceRange = 200;
-
-  @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Recherche')),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isPortrait = constraints.maxHeight > constraints.maxWidth;
-          final crossAxisCount = isPortrait
-              ? (constraints.maxWidth > 600 ? 3 : 2)
-              : (constraints.maxWidth > 900 ? 4 : 3);
-
-          return Column(
-            children: [
-              Padding(
-                padding: EdgeInsets.all(screenWidth * 0.04),
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Rechercher un produit...',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey[50],
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      _searchQuery = value;
-                      _filterProducts();
-                    });
-                  },
-                ),
-              ),
-
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: DropdownButtonFormField<String>(
-                        value: _selectedCategory,
-                        decoration: InputDecoration(
-                          labelText: 'Catégorie',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: screenWidth * 0.03,
-                            vertical: screenWidth * 0.04,
-                          ),
-                        ),
-                        isExpanded: true,
-                        items: ['Toutes', ...categories.map((cat) => cat.name)]
-                            .map((String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(
-                                  value,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              );
-                            })
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedCategory = value!;
-                            _filterProducts();
-                          });
-                        },
-                      ),
-                    ),
-                    SizedBox(height: screenWidth * 0.04),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Prix max: ${_priceRange.toStringAsFixed(0)} frs',
-                          style: TextStyle(fontSize: screenWidth * 0.04),
-                        ),
-                        Slider(
-                          value: _priceRange,
-                          min: 0,
-                          max: 500,
-                          divisions: 10,
-                          onChanged: (value) {
-                            setState(() {
-                              _priceRange = value;
-                              _filterProducts();
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              SizedBox(height: screenWidth * 0.04),
-
-              Expanded(
-                child: GridView.builder(
-                  padding: EdgeInsets.all(screenWidth * 0.04),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: screenWidth * 0.04,
-                    mainAxisSpacing: screenWidth * 0.04,
-                    childAspectRatio: isPortrait ? 0.8 : 1.2,
-                  ),
-                  itemCount: _filteredProducts.length,
-                  itemBuilder: (context, index) {
-                    final product = _filteredProducts[index];
-                    return _buildSearchProductCard(context, product);
-                  },
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  void _filterProducts() {
-    setState(() {
-      _filteredProducts = allProducts.where((product) {
-        final matchesSearch =
-            product.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            product.description.toLowerCase().contains(
-              _searchQuery.toLowerCase(),
-            );
-        final matchesCategory =
-            _selectedCategory == 'Toutes' ||
-            product.category == _selectedCategory;
-        final matchesPrice = product.price <= _priceRange;
-        return matchesSearch && matchesCategory && matchesPrice;
-      }).toList();
-    });
-  }
-
-  Widget _buildSearchProductCard(BuildContext context, Product product) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => ProductDetailScreen(product: product),
-            ),
-          );
-        },
-        child: Padding(
-          padding: EdgeInsets.all(screenWidth * 0.03),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: screenWidth * 0.3,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE0F2F1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.image,
-                    size: screenWidth * 0.15,
-                    color: const Color(0xFF00695C).withOpacity(0.5),
-                  ),
-                ),
-              ),
-              SizedBox(height: screenWidth * 0.02),
-              SizedBox(
-                child: Text(
-                  product.name,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: screenWidth * 0.025,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Text(
-                '${product.price.toStringAsFixed(2)} frs',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: screenWidth * 0.04,
-                  color: const Color(0xFF00695C),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 // ÉCRAN 5 : COMPTE
 class AccountScreen extends StatefulWidget {
