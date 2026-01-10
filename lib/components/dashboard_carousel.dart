@@ -17,38 +17,41 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
 
   // Couleurs modernes et élégantes
   final List<Color> _cardColors = [
-    const Color(0xFF2C3E50), // Bleu nuit
-    const Color(0xFF34495E), // Bleu ardoise
-    const Color(0xFF1A5276), // Bleu royal
-    const Color(0xFF21618C), // Bleu ciel profond
-    const Color(0xFF283747), // Gris bleuté
+    const Color.fromARGB(255, 56, 118, 181), // Bleu nuit
+    const Color.fromARGB(255, 105, 105, 232), // Bleu ardoise
+    const Color.fromARGB(191, 17, 142, 219), // Bleu royal
+    const Color.fromARGB(255, 100, 5, 144), // Bleu ciel profond
+    const Color.fromARGB(255, 3, 143, 164), // Gris bleuté
   ];
 
   final List<Color> _highlightColors = [
-    const Color(0xFFE94C3C), // Rouge vif
-    const Color(0xFF3498DB), // Bleu clair
-    const Color(0xFF2ECC71), // Vert émeraude
-    const Color(0xFFF39C12), // Orange
-    const Color(0xFF9B59B6), // Violet
+    const Color.fromARGB(255, 115, 233, 60),
+    const Color.fromARGB(255, 52, 152, 219),
+    const Color(0xFF2ECC71),
+    const Color(0xFFF39C12),
+    const Color(0xFF9B59B6),
   ];
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startAutoScroll();
+    });
+  }
 
+  void _startAutoScroll() {
     _timer = Timer.periodic(const Duration(seconds: 5), (Timer timer) {
-      if (_ads.isEmpty) return;
+      if (_ads.isEmpty || !_pageController.hasClients) return;
 
-      if (_pageController.hasClients) {
-        _currentPage++;
-        if (_currentPage >= _ads.length) _currentPage = 0;
+      int nextPage = _currentPage + 1;
+      if (nextPage >= _ads.length) nextPage = 0;
 
-        _pageController.animateToPage(
-          _currentPage,
-          duration: const Duration(milliseconds: 5000),
-          curve: Curves.easeInOut,
-        );
-      }
+      _pageController.animateToPage(
+        nextPage,
+        duration: const Duration(milliseconds: 3000),
+        curve: Curves.easeInOut,
+      );
     });
   }
 
@@ -59,7 +62,6 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
     super.dispose();
   }
 
-  // Méthode sécurisée pour obtenir les données
   String _getField(DocumentSnapshot doc, String field, String defaultValue) {
     try {
       return doc.get(field)?.toString() ?? defaultValue;
@@ -76,7 +78,6 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
     }
   }
 
-  // Widget badge moderne
   Widget _buildBadge(String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -103,125 +104,158 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
     );
   }
 
-  // Fonction pour afficher le dialogue élégant
   void _showDescriptionDialog(
     BuildContext context,
     String title,
     String description,
     Color color,
   ) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallPhone = screenWidth < 360;
+    final isTablet = screenWidth >= 600;
+
     showDialog(
       context: context,
       barrierColor: Colors.black.withOpacity(0.7),
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(20),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Carte du dialogue
-              Container(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.8,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2C3E50),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 30,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // En-tête du dialogue
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: color.withOpacity(0.1),
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(24),
-                          topRight: Radius.circular(24),
-                        ),
-                        border: Border.all(
-                          color: color.withOpacity(0.2),
-                          width: 1,
-                        ),
+        insetPadding: EdgeInsets.all(
+          isSmallPhone
+              ? 12
+              : isTablet
+              ? 30
+              : 20,
+        ),
+        child: Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+            maxWidth: isTablet ? 500 : double.infinity,
+          ),
+          child: SingleChildScrollView(
+            physics: ClampingScrollPhysics(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Carte du dialogue
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2C3E50),
+                    borderRadius: BorderRadius.circular(isSmallPhone ? 20 : 24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 30,
+                        offset: const Offset(0, 10),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: color,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: const Text(
-                                  'DÉTAILS',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 1,
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // En-tête du dialogue
+                      Container(
+                        padding: EdgeInsets.all(
+                          isSmallPhone
+                              ? 16
+                              : isTablet
+                              ? 28
+                              : 24,
+                        ),
+                        decoration: BoxDecoration(
+                          color: color.withOpacity(0.1),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(isSmallPhone ? 20 : 24),
+                            topRight: Radius.circular(isSmallPhone ? 20 : 24),
+                          ),
+                          border: Border.all(
+                            color: color.withOpacity(0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: isSmallPhone ? 12 : 16,
+                                    vertical: isSmallPhone ? 6 : 8,
                                   ),
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () => Navigator.pop(context),
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.1),
-                                    shape: BoxShape.circle,
+                                    color: color,
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
-                                  child: const Icon(
-                                    Icons.close_rounded,
-                                    color: Colors.white,
-                                    size: 20,
+                                  child: Text(
+                                    'DÉTAILS',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: isSmallPhone ? 10 : 12,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 1,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            title.toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.w900,
-                              height: 1.3,
-                              letterSpacing: 0.8,
+                                GestureDetector(
+                                  onTap: () => Navigator.pop(context),
+                                  child: Container(
+                                    padding: EdgeInsets.all(
+                                      isSmallPhone ? 6 : 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.close_rounded,
+                                      color: Colors.white,
+                                      size: isSmallPhone ? 16 : 20,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                            SizedBox(height: isSmallPhone ? 12 : 16),
+                            Text(
+                              title.toUpperCase(),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: isSmallPhone
+                                    ? 18
+                                    : isTablet
+                                    ? 24
+                                    : 22,
+                                fontWeight: FontWeight.w900,
+                                height: 1.3,
+                                letterSpacing: 0.8,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    // Corps du dialogue avec scroll
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(24),
+                      // Corps du dialogue
+                      Padding(
+                        padding: EdgeInsets.all(
+                          isSmallPhone
+                              ? 16
+                              : isTablet
+                              ? 24
+                              : 20,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Icône décorative
                             Center(
                               child: Container(
-                                margin: const EdgeInsets.only(bottom: 20),
-                                padding: const EdgeInsets.all(16),
+                                margin: EdgeInsets.only(
+                                  bottom: isSmallPhone ? 16 : 20,
+                                ),
+                                padding: EdgeInsets.all(isSmallPhone ? 12 : 16),
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [
@@ -236,14 +270,16 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                                 child: Icon(
                                   Icons.description_rounded,
                                   color: Colors.white,
-                                  size: 32,
+                                  size: isSmallPhone ? 24 : 32,
                                 ),
                               ),
                             ),
                             // Séparateur
                             Container(
                               height: 1,
-                              margin: const EdgeInsets.symmetric(vertical: 16),
+                              margin: EdgeInsets.symmetric(
+                                vertical: isSmallPhone ? 12 : 16,
+                              ),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
@@ -257,20 +293,26 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                             // Description complète
                             Text(
                               description,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 16,
+                                fontSize: isSmallPhone
+                                    ? 14
+                                    : isTablet
+                                    ? 18
+                                    : 16,
                                 fontWeight: FontWeight.w400,
                                 height: 1.6,
                               ),
                             ),
-                            const SizedBox(height: 24),
+                            SizedBox(height: isSmallPhone ? 16 : 24),
                             // Informations complémentaires
                             Container(
-                              padding: const EdgeInsets.all(16),
+                              padding: EdgeInsets.all(isSmallPhone ? 12 : 16),
                               decoration: BoxDecoration(
                                 color: Colors.black.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(
+                                  isSmallPhone ? 12 : 16,
+                                ),
                                 border: Border.all(
                                   color: Colors.white.withOpacity(0.1),
                                 ),
@@ -280,17 +322,19 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                                   Icon(
                                     Icons.info_outline_rounded,
                                     color: color,
-                                    size: 20,
+                                    size: isSmallPhone ? 16 : 20,
                                   ),
-                                  const SizedBox(width: 12),
+                                  SizedBox(width: isSmallPhone ? 8 : 12),
                                   Expanded(
                                     child: Text(
                                       'Cette annonce est valide pour une durée limitée.',
                                       style: TextStyle(
                                         color: Colors.white.withOpacity(0.8),
-                                        fontSize: 14,
+                                        fontSize: isSmallPhone ? 12 : 14,
                                         fontStyle: FontStyle.italic,
                                       ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
@@ -299,118 +343,184 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                           ],
                         ),
                       ),
-                    ),
-                    // Pied du dialogue
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.3),
-                        borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(24),
-                          bottomRight: Radius.circular(24),
-                        ),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.05),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 12,
-                              ),
-                              backgroundColor: Colors.white.withOpacity(0.1),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                side: BorderSide(
-                                  color: Colors.white.withOpacity(0.2),
-                                ),
-                              ),
-                            ),
-                            child: const Text(
-                              'Fermer',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
+                      // Pied du dialogue
+                      Container(
+                        padding: EdgeInsets.all(isSmallPhone ? 16 : 20),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.3),
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(isSmallPhone ? 20 : 24),
+                            bottomRight: Radius.circular(
+                              isSmallPhone ? 20 : 24,
                             ),
                           ),
-                          ElevatedButton(
-                            onPressed: () {
-                              // Action pour en savoir plus
-                              Navigator.pop(context);
-                              _showContactDialog(context, title, color);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 12,
-                              ),
-                              backgroundColor: color,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 5,
-                              shadowColor: color.withOpacity(0.5),
-                            ),
-                            child: const Row(
-                              children: [
-                                Text(
-                                  'En savoir plus',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.05),
+                          ),
+                        ),
+                        child: isSmallPhone
+                            ? Column(
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      _showContactDialog(context, title, color);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      minimumSize: Size(double.infinity, 48),
+                                      backgroundColor: color,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      elevation: 5,
+                                      shadowColor: color.withOpacity(0.5),
+                                    ),
+                                    child: Text(
+                                      'En savoir plus',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                                  SizedBox(height: 12),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    style: TextButton.styleFrom(
+                                      minimumSize: Size(double.infinity, 48),
+                                      backgroundColor: Colors.white.withOpacity(
+                                        0.1,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        side: BorderSide(
+                                          color: Colors.white.withOpacity(0.2),
+                                        ),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Fermer',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 24,
+                                        vertical: 12,
+                                      ),
+                                      backgroundColor: Colors.white.withOpacity(
+                                        0.1,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        side: BorderSide(
+                                          color: Colors.white.withOpacity(0.2),
+                                        ),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Fermer',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      _showContactDialog(context, title, color);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 24,
+                                        vertical: 12,
+                                      ),
+                                      backgroundColor: color,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      elevation: 5,
+                                      shadowColor: color.withOpacity(0.5),
+                                    ),
+                                    child: Text(
+                                      'En savoir plus',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Bouton de fermeture extérieur
+                if (!isSmallPhone) SizedBox(height: 20),
+                if (!isSmallPhone)
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: EdgeInsets.all(isTablet ? 16 : 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.expand_more_rounded,
+                        color: Colors.white,
+                        size: isTablet ? 28 : 24,
                       ),
                     ),
-                  ],
-                ),
-              ),
-              // Bouton de fermeture extérieur
-              const SizedBox(height: 20),
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.expand_more_rounded,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  // Dialogue de contact
   void _showContactDialog(BuildContext context, String title, Color color) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallPhone = screenWidth < 360;
+    final isTablet = screenWidth >= 600;
+
     showDialog(
       context: context,
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.all(
+          isSmallPhone
+              ? 12
+              : isTablet
+              ? 30
+              : 20,
+        ),
         child: Container(
+          constraints: BoxConstraints(
+            maxWidth: isTablet ? 400 : double.infinity,
+          ),
           decoration: BoxDecoration(
             color: const Color(0xFF2C3E50),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(isSmallPhone ? 16 : 20),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.4),
@@ -423,20 +533,24 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(isSmallPhone ? 16 : 24),
                 decoration: BoxDecoration(
                   color: color,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(isSmallPhone ? 16 : 20),
+                    topRight: Radius.circular(isSmallPhone ? 16 : 20),
                   ),
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
                     'CONTACTEZ-NOUS',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: isSmallPhone
+                          ? 14
+                          : isTablet
+                          ? 20
+                          : 18,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1,
                     ),
@@ -444,62 +558,132 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(isSmallPhone ? 16 : 24),
                 child: Column(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.phone_in_talk_rounded,
                       color: Colors.white,
-                      size: 48,
+                      size: isSmallPhone
+                          ? 36
+                          : isTablet
+                          ? 56
+                          : 48,
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: isSmallPhone ? 12 : 16),
                     Text(
                       'Pour plus d\'informations sur :',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.8),
-                        fontSize: 14,
+                        fontSize: isSmallPhone ? 12 : 14,
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 6),
                     Text(
                       title,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: isSmallPhone
+                            ? 14
+                            : isTablet
+                            ? 18
+                            : 16,
                         fontWeight: FontWeight.w700,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: color,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
+                    SizedBox(height: isSmallPhone ? 20 : 24),
+                    isSmallPhone
+                        ? Column(
+                            children: [
+                              ElevatedButton(
+                                onPressed: () {},
+                                style: ElevatedButton.styleFrom(
+                                  minimumSize: Size(double.infinity, 48),
+                                  backgroundColor: color,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Appeler',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 12),
+                              OutlinedButton(
+                                onPressed: () {},
+                                style: OutlinedButton.styleFrom(
+                                  minimumSize: Size(double.infinity, 48),
+                                  side: BorderSide(color: color),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Message',
+                                  style: TextStyle(
+                                    color: color,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () {},
+                                style: ElevatedButton.styleFrom(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
+                                  backgroundColor: color,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Appeler',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: isTablet ? 16 : 12),
+                              OutlinedButton(
+                                onPressed: () {},
+                                style: OutlinedButton.styleFrom(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
+                                  side: BorderSide(color: color),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Message',
+                                  style: TextStyle(
+                                    color: color,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          child: const Text('Appeler'),
-                        ),
-                        const SizedBox(width: 12),
-                        OutlinedButton(
-                          onPressed: () {},
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: color),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: Text(
-                            'Message',
-                            style: TextStyle(color: color),
-                          ),
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),
@@ -512,6 +696,54 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isSmallPhone = screenWidth < 360;
+    final isMediumPhone = screenWidth >= 360 && screenWidth < 400;
+    final isLargePhone = screenWidth >= 400 && screenWidth < 600;
+    final isTablet = screenWidth >= 600;
+
+    // Calcul dynamique de la hauteur du carousel
+    double carouselHeight;
+    double viewportFraction;
+    EdgeInsets cardPadding;
+    double fontSizeTitle;
+    double fontSizeDescription;
+    double iconSize;
+
+    if (isSmallPhone) {
+      carouselHeight = screenHeight * 0.25;
+      viewportFraction = 0.82;
+      cardPadding = const EdgeInsets.all(12);
+      fontSizeTitle = 14;
+      fontSizeDescription = 11;
+      iconSize = 16;
+    } else if (isMediumPhone) {
+      carouselHeight = screenHeight * 0.28;
+      viewportFraction = 0.85;
+      cardPadding = const EdgeInsets.all(14);
+      fontSizeTitle = 16;
+      fontSizeDescription = 12;
+      iconSize = 18;
+    } else if (isLargePhone) {
+      carouselHeight = screenHeight * 0.30;
+      viewportFraction = 0.88;
+      cardPadding = const EdgeInsets.all(16);
+      fontSizeTitle = 17;
+      fontSizeDescription = 13;
+      iconSize = 20;
+    } else {
+      // Tablet
+      carouselHeight = screenHeight * 0.32;
+      viewportFraction = 0.88;
+      cardPadding = const EdgeInsets.all(20);
+      fontSizeTitle = isTablet ? 22 : 18;
+      fontSizeDescription = isTablet ? 16 : 14;
+      iconSize = isTablet ? 28 : 24;
+    }
+
+    // Ajuster le viewport fraction si nécessaire
+
     final Stream<QuerySnapshot> adsStream = FirebaseFirestore.instance
         .collection('ads')
         .orderBy('createdAt', descending: true)
@@ -522,11 +754,19 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
       stream: adsStream,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return _buildLoadingPlaceholder();
+          return SizedBox(
+            height: carouselHeight,
+            child: Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation(_highlightColors[0]),
+                strokeWidth: 2,
+              ),
+            ),
+          );
         }
 
         if (snapshot.data!.docs.isEmpty) {
-          return _buildEmptyPlaceholder();
+          return _buildEmptyPlaceholder(carouselHeight);
         }
 
         _ads = snapshot.data!.docs;
@@ -534,8 +774,7 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
         return Column(
           children: [
             SizedBox(
-              height:
-                  MediaQuery.of(context).size.width * 0.55, // Hauteur réduite
+              height: carouselHeight,
               child: PageView.builder(
                 controller: _pageController,
                 itemCount: _ads.length,
@@ -558,7 +797,9 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                   final cardColor = _cardColors[index % _cardColors.length];
 
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isSmallPhone ? 6.0 : 8.0,
+                    ),
                     child: GestureDetector(
                       onTap: () => _showDescriptionDialog(
                         context,
@@ -566,302 +807,287 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                         description,
                         highlightColor,
                       ),
-                      child: Stack(
-                        children: [
-                          // Carte principale
-                          Container(
-                            decoration: BoxDecoration(
-                              color: cardColor,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 10),
-                                ),
-                              ],
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: cardColor,
+                          borderRadius: BorderRadius.circular(
+                            isSmallPhone ? 14 : 16,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: isSmallPhone ? 15 : 20,
+                              offset: const Offset(0, 8),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // En-tête avec badge - Partie fixe
-                                Container(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            // Badge "MIS EN AVANT" si applicable
-                                            if (isFeatured)
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                  bottom: 8,
-                                                ),
-                                                child: _buildBadge(
-                                                  'MIS EN AVANT',
-                                                  highlightColor,
-                                                ),
-                                              ),
-                                            // Titre principal
-                                            Text(
-                                              title.toUpperCase(),
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w800,
-                                                height: 1.2,
-                                                letterSpacing: 0.8,
-                                              ),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            const SizedBox(height: 8),
-                                            // Indicateur "Appuyez pour voir plus"
-                                            Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.open_in_new_rounded,
-                                                  color: highlightColor,
-                                                  size: 14,
-                                                ),
-                                                const SizedBox(width: 6),
-                                                Text(
-                                                  'Appuyez pour voir les détails',
-                                                  style: TextStyle(
-                                                    color: highlightColor,
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      // Bouton d'action
-                                      Container(
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                          border: Border.all(
-                                            color: Colors.white.withOpacity(
-                                              0.2,
-                                            ),
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Icon(
-                                          Icons.visibility_rounded,
-                                          color: highlightColor,
-                                          size: 24,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                // Séparateur
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                  ),
-                                  child: Divider(
-                                    color: Colors.white.withOpacity(0.1),
-                                    height: 1,
-                                  ),
-                                ),
-                                // Description tronquée - Partie flexible
-                                Expanded(
-                                  child: Container(
-                                    padding: const EdgeInsets.all(20),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // En-tête
+                            Padding(
+                              padding: cardPadding,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        // Extrait de la description avec hauteur limitée
-                                        Expanded(
-                                          child: SingleChildScrollView(
-                                            physics:
-                                                const NeverScrollableScrollPhysics(),
-                                            child: Text(
-                                              _truncateDescription(
-                                                description,
-                                                100,
-                                              ),
-                                              style: TextStyle(
-                                                color: Colors.white.withOpacity(
-                                                  0.9,
-                                                ),
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w400,
-                                                height: 1.5,
-                                              ),
-                                              maxLines: 3,
-                                              overflow: TextOverflow.ellipsis,
+                                        if (isFeatured)
+                                          Padding(
+                                            padding: EdgeInsets.only(
+                                              bottom: isSmallPhone ? 6 : 8,
+                                            ),
+                                            child: _buildBadge(
+                                              'MIS EN AVANT',
+                                              highlightColor,
                                             ),
                                           ),
+                                        Text(
+                                          title.toUpperCase(),
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: fontSizeTitle,
+                                            fontWeight: FontWeight.w800,
+                                            height: 1.2,
+                                            letterSpacing: 0.8,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        SizedBox(height: isSmallPhone ? 6 : 8),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.open_in_new_rounded,
+                                              color: highlightColor,
+                                              size: isSmallPhone ? 12 : 14,
+                                            ),
+                                            SizedBox(
+                                              width: isSmallPhone ? 4 : 6,
+                                            ),
+                                            Flexible(
+                                              child: Text(
+                                                'Appuyez pour voir les détails',
+                                                style: TextStyle(
+                                                  color: highlightColor,
+                                                  fontSize: isSmallPhone
+                                                      ? 10
+                                                      : 12,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
                                   ),
-                                ),
-                                // Pied de carte - Partie fixe
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 12,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.2),
-                                    borderRadius: const BorderRadius.only(
-                                      bottomLeft: Radius.circular(16),
-                                      bottomRight: Radius.circular(16),
+                                  SizedBox(width: isSmallPhone ? 8 : 12),
+                                  Container(
+                                    padding: EdgeInsets.all(
+                                      isSmallPhone ? 8 : 12,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(
+                                        isSmallPhone ? 8 : 12,
+                                      ),
+                                      border: Border.all(
+                                        color: Colors.white.withOpacity(0.2),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Icon(
+                                      Icons.visibility_rounded,
+                                      color: highlightColor,
+                                      size: iconSize,
                                     ),
                                   ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      // Date/heure
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.access_time_rounded,
+                                ],
+                              ),
+                            ),
+                            // Séparateur
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: cardPadding.horizontal / 2,
+                              ),
+                              child: Divider(
+                                color: Colors.white.withOpacity(0.1),
+                                height: 1,
+                              ),
+                            ),
+                            // Description
+                            Expanded(
+                              child: Padding(
+                                padding: EdgeInsets.all(cardPadding.left),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Flexible(
+                                      child: SingleChildScrollView(
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        child: Text(
+                                          _truncateDescription(
+                                            description,
+                                            isSmallPhone ? 80 : 100,
+                                          ),
+                                          style: TextStyle(
                                             color: Colors.white.withOpacity(
-                                              0.6,
+                                              0.9,
                                             ),
-                                            size: 16,
+                                            fontSize: fontSizeDescription,
+                                            fontWeight: FontWeight.w400,
+                                            height: 1.5,
                                           ),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            'PUBLIÉ AUJOURD\'HUI',
-                                            style: TextStyle(
-                                              color: Colors.white.withOpacity(
-                                                0.8,
-                                              ),
-                                              fontSize: 9,
-                                              fontWeight: FontWeight.w600,
-                                              fontStyle: FontStyle.italic,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      // Indice
-                                      Text(
-                                        '${index + 1}/${_ads.length}',
-                                        style: TextStyle(
-                                          color: Colors.white.withOpacity(0.6),
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
+                                          maxLines: 3,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Élément décoratif angle supérieur droit
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: ClipPath(
-                              clipper: TriangleClipper(),
-                              child: Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topRight,
-                                    end: Alignment.bottomLeft,
-                                    colors: [
-                                      highlightColor.withOpacity(0.8),
-                                      highlightColor.withOpacity(0.3),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                            // Pied de carte
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: cardPadding.left,
+                                vertical: isSmallPhone ? 8 : 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.2),
+                                borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(
+                                    isSmallPhone ? 14 : 16,
+                                  ),
+                                  bottomRight: Radius.circular(
+                                    isSmallPhone ? 14 : 16,
+                                  ),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.access_time_rounded,
+                                        color: Colors.white.withOpacity(0.6),
+                                        size: isSmallPhone ? 12 : 16,
+                                      ),
+                                      SizedBox(width: isSmallPhone ? 4 : 6),
+                                      Text(
+                                        'PUBLIÉ AUJOURD\'HUI',
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(0.8),
+                                          fontSize: isSmallPhone ? 8 : 10,
+                                          fontWeight: FontWeight.w600,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                  Text(
+                                    '${index + 1}/${_ads.length}',
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.6),
+                                      fontSize: isSmallPhone ? 10 : 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
                 },
               ),
             ),
-            // Indicateurs de points
-            // const SizedBox(height: 20),
-            // Row(
-            //   mainAxisAlignment: MainAxisAlignment.center,
-            //   children: List.generate(
-            //     _ads.length,
-            //     (index) => Container(
-            //       width: _currentPage == index ? 12 : 8,
-            //       height: _currentPage == index ? 12 : 8,
-            //       margin: const EdgeInsets.symmetric(horizontal: 4),
-            //       decoration: BoxDecoration(
-            //         shape: BoxShape.circle,
-            //         color: _currentPage == index
-            //             ? _highlightColors[index % _highlightColors.length]
-            //             : Colors.grey.withOpacity(0.5),
-            //         boxShadow: _currentPage == index
-            //             ? [
-            //                 BoxShadow(
-            //                   color:
-            //                       _highlightColors[index %
-            //                               _highlightColors.length]
-            //                           .withOpacity(0.5),
-            //                   blurRadius: 8,
-            //                   offset: const Offset(0, 2),
-            //                 ),
-            //               ]
-            //             : null,
-            //       ),
-            //     ),
-            //   ),
-            // ),
+            SizedBox(height: isSmallPhone ? 16 : 20),
+            // Indicateurs de points adaptatifs
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  _ads.length,
+                  (index) => Container(
+                    width: _currentPage == index
+                        ? (isSmallPhone
+                              ? 10
+                              : isTablet
+                              ? 14
+                              : 12)
+                        : (isSmallPhone
+                              ? 6
+                              : isTablet
+                              ? 10
+                              : 8),
+                    height: _currentPage == index
+                        ? (isSmallPhone
+                              ? 10
+                              : isTablet
+                              ? 14
+                              : 12)
+                        : (isSmallPhone
+                              ? 6
+                              : isTablet
+                              ? 10
+                              : 8),
+                    margin: EdgeInsets.symmetric(
+                      horizontal: isSmallPhone ? 3 : 4,
+                    ),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _currentPage == index
+                          ? _highlightColors[index % _highlightColors.length]
+                          : Colors.grey.withOpacity(0.5),
+                      boxShadow: _currentPage == index
+                          ? [
+                              BoxShadow(
+                                color:
+                                    _highlightColors[index %
+                                            _highlightColors.length]
+                                        .withOpacity(0.5),
+                                blurRadius: isSmallPhone ? 4 : 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : null,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         );
       },
     );
   }
 
-  // Tronquer la description pour l'affichage carte
   String _truncateDescription(String text, int maxLength) {
     if (text.length <= maxLength) return text;
     return '${text.substring(0, maxLength)}...';
   }
 
-  // Placeholder de chargement
-  Widget _buildLoadingPlaceholder() {
+  Widget _buildEmptyPlaceholder(double height) {
     return SizedBox(
-      height: MediaQuery.of(context).size.width * 0.55,
-      child: Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation(_highlightColors[0]),
-          strokeWidth: 2,
-        ),
-      ),
-    );
-  }
-
-  // Placeholder vide
-  Widget _buildEmptyPlaceholder() {
-    return SizedBox(
-      height: MediaQuery.of(context).size.width * 0.55,
+      height: height,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: _cardColors[0],
           borderRadius: BorderRadius.circular(16),
@@ -895,7 +1121,7 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
               'Les nouvelles annonces apparaîtront ici',
               style: TextStyle(
                 color: Colors.white.withOpacity(0.6),
-                fontSize: 12,
+                fontSize: 14,
               ),
               textAlign: TextAlign.center,
             ),
@@ -904,20 +1130,4 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
       ),
     );
   }
-}
-
-// Clipper pour le triangle décoratif
-class TriangleClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.moveTo(size.width, 0);
-    path.lineTo(size.width, size.height);
-    path.lineTo(0, 0);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
