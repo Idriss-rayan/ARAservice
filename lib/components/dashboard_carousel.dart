@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:share_plus/share_plus.dart';
 
 class DashboardCarousel extends StatefulWidget {
   const DashboardCarousel({super.key});
@@ -494,6 +495,35 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
     final isSmallPhone = screenWidth < 360;
     final isTablet = screenWidth >= 600;
 
+    // Fonction pour envoyer un message WhatsApp
+    Future<void> _sendWhatsAppMessage() async {
+      // Numéro de téléphone (à configurer)
+      final String phoneNumber = '+33612345678';
+
+      // Message avec l'annonce
+      final String message =
+          "Bonjour, je suis intéressé par votre annonce :\n\n"
+          "*${title.toUpperCase()}*\n\n" // En gras + majuscules
+          "Pouvez-vous me donner plus d'informations ?";
+
+      // URL WhatsApp
+      final String url =
+          "https://wa.me/$phoneNumber?text=${Uri.encodeFull(message)}";
+
+      try {
+        // Utilisation de share_plus pour partager
+        await Share.share(message, subject: 'Information sur : $title');
+      } catch (e) {
+        // Fallback : message d'erreur
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur : ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -609,7 +639,7 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                               ),
                               SizedBox(height: 12),
                               OutlinedButton(
-                                onPressed: () {},
+                                onPressed: _sendWhatsAppMessage, // ← CHANGÉ ICI
                                 style: OutlinedButton.styleFrom(
                                   minimumSize: Size(double.infinity, 48),
                                   side: BorderSide(color: color),
@@ -618,7 +648,7 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                                   ),
                                 ),
                                 child: Text(
-                                  'Message',
+                                  'Message WhatsApp', // ← TEXTE MODIFIÉ
                                   style: TextStyle(
                                     color: color,
                                     fontSize: 14,
@@ -631,29 +661,29 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                         : Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              ElevatedButton(
-                                onPressed: () {},
-                                style: ElevatedButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 12,
-                                  ),
-                                  backgroundColor: color,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                                child: Text(
-                                  'Appeler',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
+                              // ElevatedButton(
+                              //   onPressed: () {},
+                              //   style: ElevatedButton.styleFrom(
+                              //     padding: EdgeInsets.symmetric(
+                              //       horizontal: 24,
+                              //       vertical: 12,
+                              //     ),
+                              //     backgroundColor: color,
+                              //     shape: RoundedRectangleBorder(
+                              //       borderRadius: BorderRadius.circular(10),
+                              //     ),
+                              //   ),
+                              //   child: Text(
+                              //     'Appeler',
+                              //     style: TextStyle(
+                              //       fontSize: 14,
+                              //       fontWeight: FontWeight.w600,
+                              //     ),
+                              //   ),
+                              // ),
                               SizedBox(width: isTablet ? 16 : 12),
                               OutlinedButton(
-                                onPressed: () {},
+                                onPressed: _sendWhatsAppMessage, // ← CHANGÉ ICI
                                 style: OutlinedButton.styleFrom(
                                   padding: EdgeInsets.symmetric(
                                     horizontal: 24,
@@ -665,7 +695,7 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                                   ),
                                 ),
                                 child: Text(
-                                  'Message',
+                                  'Message WhatsApp', // ← TEXTE MODIFIÉ
                                   style: TextStyle(
                                     color: color,
                                     fontSize: 14,

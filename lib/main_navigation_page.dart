@@ -12,6 +12,7 @@ import 'package:araservice/service_search.dart' hide FirestoreService;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:share_plus/share_plus.dart';
 
 // Modèle de produit
 // Modèle de produit - Mise à jour pour correspondre à Firestore
@@ -1967,10 +1968,45 @@ class _AccountScreenState extends State<AccountScreen> {
 }
 
 // ÉCRAN SUPPLEMENTAIRE : DÉTAILS DU PRODUIT
+// ÉCRAN SUPPLEMENTAIRE : DÉTAILS DU PRODUIT
 class ProductDetailScreen extends StatelessWidget {
   final Product product;
 
   const ProductDetailScreen({super.key, required this.product});
+
+  Future<void> _shareViaWhatsApp() async {
+    // Message formaté avec les détails du produit
+    final message =
+        """
+🌟 *Nouvelle demande de produit - ARA Service* 🌟
+
+*Produit:* ${product.name}
+*Catégorie:* ${product.category}
+*Prix:* ${product.price.toStringAsFixed(2)} frs
+*Description:* ${product.description}
+
+📞 *Contact rapide via WhatsApp*
+🛒 *Disponible sur ARA Service*
+
+---
+*Envoyé depuis l'application ARA Service*
+    """;
+
+    try {
+      // Partager via WhatsApp
+      await Share.share(
+        message,
+        subject: 'Demande pour ${product.name} - ARA Service',
+        sharePositionOrigin: Rect.zero,
+      );
+    } catch (e) {
+      // Si l'erreur est liée à WhatsApp, on essaie de partager normalement
+      await Share.share(
+        message,
+        subject: 'Demande pour ${product.name} - ARA Service',
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2059,23 +2095,46 @@ class ProductDetailScreen extends StatelessWidget {
             SizedBox(height: screenWidth * 0.08),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  // Ajouter au panier
-                },
+              child: ElevatedButton.icon(
+                onPressed: _shareViaWhatsApp,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00695C),
+                  backgroundColor: const Color(0xFF25D366), // Couleur WhatsApp
                   padding: EdgeInsets.symmetric(vertical: screenWidth * 0.04),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: Text(
-                  'Ajouter au panier',
+                icon: const Icon(Icons.phone, color: Colors.white),
+                label: Text(
+                  'Message via WhatsApp',
                   style: TextStyle(
-                    fontSize: screenWidth * 0.045,
+                    fontSize: screenWidth * 0.035,
                     fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: screenWidth * 0.04),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: screenWidth * 0.04),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  side: const BorderSide(color: Color(0xFF00695C)),
+                ),
+                child: Text(
+                  'Retour',
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.035,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF00695C),
                   ),
                 ),
               ),

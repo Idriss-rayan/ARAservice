@@ -327,16 +327,6 @@ Merci! 🙏
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(
-                                          Icons.attach_money,
-                                          size: isSmallPhone
-                                              ? 10
-                                              : isTablet
-                                              ? 18
-                                              : 16,
-                                          color: primaryColor,
-                                        ),
-                                        SizedBox(width: 4),
                                         Text(
                                           '${product.price} frs',
                                           style: TextStyle(
