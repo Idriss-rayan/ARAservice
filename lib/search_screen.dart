@@ -1,6 +1,7 @@
 import 'package:araservice/service_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:share_plus/share_plus.dart' show Share;
 import 'package:url_launcher/url_launcher.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -64,14 +65,13 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Future<void> _orderViaWhatsApp(ProductSearch product) async {
-    final phoneNumber = '8801894689397';
     final message =
         '''
 Bonjour! 😊
 
 Je souhaite commander le produit suivant :
 
-📦 *${product.name}*
+📦 ${product.name}
 💰 Prix: ${product.price} frs
 🏷️ Catégorie: ${product.category}
 
@@ -85,13 +85,19 @@ Pouvez-vous me contacter pour finaliser la commande?
 Merci! 🙏
     ''';
 
-    final url =
-        'https://wa.me/$phoneNumber?text=${Uri.encodeComponent(message)}';
-
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
-    } else {
-      throw 'Impossible d\'ouvrir WhatsApp';
+    // Utilisez Share.share directement
+    try {
+      await Share.share(message, subject: 'Commande: ${product.name}');
+    } catch (e) {
+      // Affichez une erreur si le partage échoue
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Impossible de partager: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

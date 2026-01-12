@@ -18,7 +18,7 @@ class _ProduitsMenagersPageState extends State<ProduitsMenagersPage>
   );
 
   static const String defaultImageUrl =
-      'https://cdn-icons-png.flaticon.com/512/679/679720.png';
+      'https://cdn-icons-png.flaticon.com/512/995/995016.png';
 
   final _nameController = TextEditingController();
   final _surnameController = TextEditingController();
