@@ -76,7 +76,7 @@ flutter_native_splash:
 
 flutter_icons:
   android: true
-  image_path: "assets/logo/ara.png"
+  image_path: "assets/logo/lg.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

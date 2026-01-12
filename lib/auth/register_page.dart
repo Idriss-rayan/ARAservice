@@ -85,13 +85,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
       await Future.delayed(const Duration(milliseconds: 1500));
       if (!mounted) return;
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
-        (_) => false,
-      );
-
       widget.onRegisterSuccess?.call();
     } catch (e) {
       if (!mounted) return;
@@ -148,13 +141,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
     // Navigation automatique après 1.5s
     Future.delayed(const Duration(milliseconds: 1500), () {
-      if (!mounted) return;
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
-        (route) => false,
-      );
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
     });
   }
 
@@ -282,7 +271,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                     ),
                                     const SizedBox(width: 16),
                                     const Text(
-                                      'S\'inscrire avec Google',
+                                      'Se connecter avec Google',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 17,
@@ -316,34 +305,31 @@ class _RegisterPageState extends State<RegisterPage> {
                     ],
                   ),
 
-                  const SizedBox(height: 10),
-
                   /// LOGIN
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => LoginPage()),
-                      );
-                    },
-                    child: const Text.rich(
-                      TextSpan(
-                        text: 'Déjà un compte ? ',
-                        style: TextStyle(color: Colors.grey),
-                        children: [
-                          TextSpan(
-                            text: 'Se connecter',
-                            style: TextStyle(
-                              color: Color(0xFF00695C),
-                              fontWeight: FontWeight.bold,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
+                  // GestureDetector(
+                  //   onTap: () {
+                  //     Navigator.pushReplacement(
+                  //       context,
+                  //       MaterialPageRoute(builder: (_) => LoginPage()),
+                  //     );
+                  //   },
+                  //   child: const Text.rich(
+                  //     TextSpan(
+                  //       text: 'Déjà un compte ? ',
+                  //       style: TextStyle(color: Colors.grey),
+                  //       children: [
+                  //         TextSpan(
+                  //           text: 'Se connecter',
+                  //           style: TextStyle(
+                  //             color: Color(0xFF00695C),
+                  //             fontWeight: FontWeight.bold,
+                  //             decoration: TextDecoration.underline,
+                  //           ),
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ),
                   const SizedBox(height: 10),
 
                   /// FOOTER

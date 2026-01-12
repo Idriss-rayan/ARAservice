@@ -1,4 +1,5 @@
 import 'package:araservice/auth/auth_gate.dart';
+import 'package:araservice/auth/register_page.dart';
 import 'package:araservice/main_navigation_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
