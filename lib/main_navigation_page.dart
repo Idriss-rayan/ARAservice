@@ -1668,7 +1668,6 @@ class _AccountScreenState extends State<AccountScreen> {
                     ],
                   ),
                 ),
-                SizedBox(height: screenWidth * 0.05),
               ],
             ),
           ],

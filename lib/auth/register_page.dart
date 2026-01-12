@@ -1,5 +1,6 @@
 import 'package:araservice/auth/login_page.dart';
 import 'package:araservice/main_navigation_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -30,8 +31,7 @@ class _RegisterPageState extends State<RegisterPage> {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        if (!mounted) return;
-        setState(() => _isLoading = false);
+        if (mounted) setState(() => _isLoading = false);
         return;
       }
 
@@ -41,29 +41,63 @@ class _RegisterPageState extends State<RegisterPage> {
         idToken: googleAuth.idToken,
       );
 
-      await FirebaseAuth.instance.signInWithCredential(credential);
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
+
+      final user = userCredential.user;
+      if (user == null) return;
+
+      final userRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid);
+
+      final doc = await userRef.get();
+
+      if (!doc.exists) {
+        // 🆕 Création du nouvel utilisateur
+        await userRef.set({
+          'uid': user.uid,
+          'email': user.email ?? '',
+          'displayName': user.displayName ?? 'Utilisateur',
+          'photoURL': user.photoURL ?? '',
+          'phoneNumber': user.phoneNumber ?? '',
+          'createdAt': FieldValue.serverTimestamp(),
+          'lastLogin': FieldValue.serverTimestamp(),
+          'orderCount': 0,
+          'totalSpent': 0.0,
+        });
+      } else {
+        // ⚠️ Cas rare : compte déjà existant
+        await userRef.update({
+          'lastLogin': FieldValue.serverTimestamp(),
+          'displayName':
+              user.displayName ?? doc.data()?['displayName'] ?? 'Utilisateur',
+          'photoURL': user.photoURL ?? doc.data()?['photoURL'] ?? '',
+          'email': user.email ?? doc.data()?['email'] ?? '',
+        });
+      }
 
       if (!mounted) return;
 
-      // Optionnel : animation ou message de succès
+      // Animation / feedback succès
       _showSuccessDialog(googleUser);
 
-      // Attendre 1.5s pour que l’utilisateur voie le succès avant navigation
       await Future.delayed(const Duration(milliseconds: 1500));
       if (!mounted) return;
 
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
-        (route) => false,
+        (_) => false,
       );
 
-      // Appel du callback si défini
       widget.onRegisterSuccess?.call();
     } catch (e) {
       if (!mounted) return;
       _showErrorSnackbar(e.toString());
-      setState(() => _isLoading = false);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

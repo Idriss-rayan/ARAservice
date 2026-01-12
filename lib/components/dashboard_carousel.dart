@@ -17,11 +17,11 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
 
   // Couleurs modernes et élégantes
   final List<Color> _cardColors = [
-    const Color.fromARGB(255, 56, 118, 181), // Bleu nuit
-    const Color.fromARGB(255, 105, 105, 232), // Bleu ardoise
-    const Color.fromARGB(191, 17, 142, 219), // Bleu royal
-    const Color.fromARGB(255, 100, 5, 144), // Bleu ciel profond
-    const Color.fromARGB(255, 3, 143, 164), // Gris bleuté
+    const Color.fromARGB(255, 56, 118, 181),
+    const Color.fromARGB(255, 105, 105, 232),
+    const Color.fromARGB(191, 17, 142, 219),
+    const Color.fromARGB(255, 100, 5, 144),
+    const Color.fromARGB(255, 3, 143, 164),
   ];
 
   final List<Color> _highlightColors = [
@@ -49,7 +49,7 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
 
       _pageController.animateToPage(
         nextPage,
-        duration: const Duration(milliseconds: 3000),
+        duration: const Duration(milliseconds: 800),
         curve: Curves.easeInOut,
       );
     });
@@ -80,14 +80,14 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
 
   Widget _buildBadge(String text, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: color.withOpacity(0.3),
-            blurRadius: 8,
+            blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
@@ -96,7 +96,7 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
         text.toUpperCase(),
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 10,
+          fontSize: 9,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.5,
         ),
@@ -136,7 +136,6 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Carte du dialogue
                 Container(
                   decoration: BoxDecoration(
                     color: const Color(0xFF2C3E50),
@@ -153,7 +152,6 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // En-tête du dialogue
                       Container(
                         padding: EdgeInsets.all(
                           isSmallPhone
@@ -237,7 +235,6 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                           ],
                         ),
                       ),
-                      // Corps du dialogue
                       Padding(
                         padding: EdgeInsets.all(
                           isSmallPhone
@@ -249,7 +246,6 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Icône décorative
                             Center(
                               child: Container(
                                 margin: EdgeInsets.only(
@@ -274,7 +270,6 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                                 ),
                               ),
                             ),
-                            // Séparateur
                             Container(
                               height: 1,
                               margin: EdgeInsets.symmetric(
@@ -290,7 +285,6 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                                 ),
                               ),
                             ),
-                            // Description complète
                             Text(
                               description,
                               style: TextStyle(
@@ -305,7 +299,6 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                               ),
                             ),
                             SizedBox(height: isSmallPhone ? 16 : 24),
-                            // Informations complémentaires
                             Container(
                               padding: EdgeInsets.all(isSmallPhone ? 12 : 16),
                               decoration: BoxDecoration(
@@ -343,7 +336,6 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                           ],
                         ),
                       ),
-                      // Pied du dialogue
                       Container(
                         padding: EdgeInsets.all(isSmallPhone ? 16 : 20),
                         decoration: BoxDecoration(
@@ -472,7 +464,6 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                     ],
                   ),
                 ),
-                // Bouton de fermeture extérieur
                 if (!isSmallPhone) SizedBox(height: 20),
                 if (!isSmallPhone)
                   GestureDetector(
@@ -703,46 +694,54 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
     final isLargePhone = screenWidth >= 400 && screenWidth < 600;
     final isTablet = screenWidth >= 600;
 
-    // Calcul dynamique de la hauteur du carousel
+    // DIMENSIONS OPTIMISÉES - HAUTEUR RÉDUITE AU MAXIMUM
     double carouselHeight;
     double viewportFraction;
     EdgeInsets cardPadding;
     double fontSizeTitle;
     double fontSizeDescription;
     double iconSize;
+    EdgeInsets cardMargin;
+    double borderRadius;
 
     if (isSmallPhone) {
-      carouselHeight = screenHeight * 0.25;
+      carouselHeight = screenHeight * 0.18; // Hauteur minimale
       viewportFraction = 0.82;
-      cardPadding = const EdgeInsets.all(12);
-      fontSizeTitle = 14;
-      fontSizeDescription = 11;
-      iconSize = 16;
+      cardPadding = const EdgeInsets.all(8); // Padding réduit
+      fontSizeTitle = 12; // Police plus petite
+      fontSizeDescription = 9;
+      iconSize = 14;
+      cardMargin = const EdgeInsets.symmetric(horizontal: 4);
+      borderRadius = 12;
     } else if (isMediumPhone) {
-      carouselHeight = screenHeight * 0.28;
+      carouselHeight = screenHeight * 0.20;
       viewportFraction = 0.85;
-      cardPadding = const EdgeInsets.all(14);
-      fontSizeTitle = 16;
-      fontSizeDescription = 12;
-      iconSize = 18;
+      cardPadding = const EdgeInsets.all(10);
+      fontSizeTitle = 14;
+      fontSizeDescription = 10;
+      iconSize = 16;
+      cardMargin = const EdgeInsets.symmetric(horizontal: 5);
+      borderRadius = 14;
     } else if (isLargePhone) {
-      carouselHeight = screenHeight * 0.30;
+      carouselHeight = screenHeight * 0.22;
       viewportFraction = 0.88;
-      cardPadding = const EdgeInsets.all(16);
-      fontSizeTitle = 17;
-      fontSizeDescription = 13;
-      iconSize = 20;
+      cardPadding = const EdgeInsets.all(12);
+      fontSizeTitle = 15;
+      fontSizeDescription = 11;
+      iconSize = 18;
+      cardMargin = const EdgeInsets.symmetric(horizontal: 6);
+      borderRadius = 16;
     } else {
       // Tablet
-      carouselHeight = screenHeight * 0.32;
+      carouselHeight = screenHeight * 0.24;
       viewportFraction = 0.88;
-      cardPadding = const EdgeInsets.all(20);
-      fontSizeTitle = isTablet ? 22 : 18;
-      fontSizeDescription = isTablet ? 16 : 14;
-      iconSize = isTablet ? 28 : 24;
+      cardPadding = const EdgeInsets.all(14);
+      fontSizeTitle = isTablet ? 18 : 16;
+      fontSizeDescription = isTablet ? 13 : 12;
+      iconSize = isTablet ? 22 : 20;
+      cardMargin = const EdgeInsets.symmetric(horizontal: 7);
+      borderRadius = isTablet ? 18 : 16;
     }
-
-    // Ajuster le viewport fraction si nécessaire
 
     final Stream<QuerySnapshot> adsStream = FirebaseFirestore.instance
         .collection('ads')
@@ -796,10 +795,8 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                       _highlightColors[index % _highlightColors.length];
                   final cardColor = _cardColors[index % _cardColors.length];
 
-                  return Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isSmallPhone ? 6.0 : 8.0,
-                    ),
+                  return Container(
+                    margin: cardMargin,
                     child: GestureDetector(
                       onTap: () => _showDescriptionDialog(
                         context,
@@ -810,26 +807,22 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                       child: Container(
                         decoration: BoxDecoration(
                           color: cardColor,
-                          borderRadius: BorderRadius.circular(
-                            isSmallPhone ? 14 : 16,
-                          ),
+                          borderRadius: BorderRadius.circular(borderRadius),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.2),
-                              blurRadius: isSmallPhone ? 15 : 20,
-                              offset: const Offset(0, 8),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
                             ),
                           ],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // En-tête
+                            // Header compact
                             Padding(
                               padding: cardPadding,
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Expanded(
@@ -839,8 +832,8 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                                       children: [
                                         if (isFeatured)
                                           Padding(
-                                            padding: EdgeInsets.only(
-                                              bottom: isSmallPhone ? 6 : 8,
+                                            padding: const EdgeInsets.only(
+                                              bottom: 4,
                                             ),
                                             child: _buildBadge(
                                               'MIS EN AVANT',
@@ -859,25 +852,21 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                         ),
-                                        SizedBox(height: isSmallPhone ? 6 : 8),
+                                        const SizedBox(height: 4),
                                         Row(
                                           children: [
                                             Icon(
                                               Icons.open_in_new_rounded,
                                               color: highlightColor,
-                                              size: isSmallPhone ? 12 : 14,
+                                              size: fontSizeDescription,
                                             ),
-                                            SizedBox(
-                                              width: isSmallPhone ? 4 : 6,
-                                            ),
+                                            const SizedBox(width: 4),
                                             Flexible(
                                               child: Text(
                                                 'Appuyez pour voir les détails',
                                                 style: TextStyle(
                                                   color: highlightColor,
-                                                  fontSize: isSmallPhone
-                                                      ? 10
-                                                      : 12,
+                                                  fontSize: fontSizeDescription,
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                                 overflow: TextOverflow.ellipsis,
@@ -888,15 +877,12 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                                       ],
                                     ),
                                   ),
-                                  SizedBox(width: isSmallPhone ? 8 : 12),
                                   Container(
-                                    padding: EdgeInsets.all(
-                                      isSmallPhone ? 8 : 12,
-                                    ),
+                                    padding: EdgeInsets.all(iconSize * 0.5),
                                     decoration: BoxDecoration(
                                       color: Colors.white.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(
-                                        isSmallPhone ? 8 : 12,
+                                        borderRadius,
                                       ),
                                       border: Border.all(
                                         color: Colors.white.withOpacity(0.2),
@@ -912,64 +898,54 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                                 ],
                               ),
                             ),
-                            // Séparateur
+                            // Separator
                             Padding(
                               padding: EdgeInsets.symmetric(
-                                horizontal: cardPadding.horizontal / 2,
+                                horizontal: cardPadding.left,
                               ),
                               child: Divider(
                                 color: Colors.white.withOpacity(0.1),
                                 height: 1,
+                                thickness: 1,
                               ),
                             ),
-                            // Description
+                            // Description compacte
                             Expanded(
                               child: Padding(
                                 padding: EdgeInsets.all(cardPadding.left),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Flexible(
-                                      child: SingleChildScrollView(
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        child: Text(
-                                          _truncateDescription(
-                                            description,
-                                            isSmallPhone ? 80 : 100,
-                                          ),
-                                          style: TextStyle(
-                                            color: Colors.white.withOpacity(
-                                              0.9,
-                                            ),
-                                            fontSize: fontSizeDescription,
-                                            fontWeight: FontWeight.w400,
-                                            height: 1.5,
-                                          ),
-                                          maxLines: 3,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                    Text(
+                                      _truncateDescription(
+                                        description,
+                                        isSmallPhone ? 60 : 80,
                                       ),
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.9),
+                                        fontSize: fontSizeDescription,
+                                        fontWeight: FontWeight.w400,
+                                        height: 1.4,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),
                               ),
                             ),
-                            // Pied de carte
+                            // Footer compact
                             Container(
                               padding: EdgeInsets.symmetric(
                                 horizontal: cardPadding.left,
-                                vertical: isSmallPhone ? 8 : 12,
+                                vertical: 6,
                               ),
                               decoration: BoxDecoration(
                                 color: Colors.black.withOpacity(0.2),
                                 borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(
-                                    isSmallPhone ? 14 : 16,
-                                  ),
-                                  bottomRight: Radius.circular(
-                                    isSmallPhone ? 14 : 16,
-                                  ),
+                                  bottomLeft: Radius.circular(borderRadius),
+                                  bottomRight: Radius.circular(borderRadius),
                                 ),
                               ),
                               child: Row(
@@ -981,14 +957,14 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                                       Icon(
                                         Icons.access_time_rounded,
                                         color: Colors.white.withOpacity(0.6),
-                                        size: isSmallPhone ? 12 : 16,
+                                        size: fontSizeDescription,
                                       ),
-                                      SizedBox(width: isSmallPhone ? 4 : 6),
+                                      const SizedBox(width: 4),
                                       Text(
                                         'PUBLIÉ AUJOURD\'HUI',
                                         style: TextStyle(
                                           color: Colors.white.withOpacity(0.8),
-                                          fontSize: isSmallPhone ? 8 : 10,
+                                          fontSize: fontSizeDescription - 2,
                                           fontWeight: FontWeight.w600,
                                           fontStyle: FontStyle.italic,
                                         ),
@@ -1000,7 +976,7 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                                     '${index + 1}/${_ads.length}',
                                     style: TextStyle(
                                       color: Colors.white.withOpacity(0.6),
-                                      fontSize: isSmallPhone ? 10 : 12,
+                                      fontSize: fontSizeDescription,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -1015,60 +991,49 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
                 },
               ),
             ),
-            SizedBox(height: isSmallPhone ? 16 : 20),
-            // Indicateurs de points adaptatifs
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  _ads.length,
-                  (index) => Container(
+            // Indicateurs compacts
+            Container(
+              height: 16,
+              margin: EdgeInsets.only(top: isSmallPhone ? 8 : 12),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                shrinkWrap: true,
+                itemCount: _ads.length,
+                itemBuilder: (context, index) {
+                  return Container(
                     width: _currentPage == index
                         ? (isSmallPhone
-                              ? 10
+                              ? 8
                               : isTablet
-                              ? 14
-                              : 12)
+                              ? 12
+                              : 10)
                         : (isSmallPhone
-                              ? 6
+                              ? 4
                               : isTablet
-                              ? 10
-                              : 8),
+                              ? 8
+                              : 6),
                     height: _currentPage == index
                         ? (isSmallPhone
-                              ? 10
+                              ? 8
                               : isTablet
-                              ? 14
-                              : 12)
+                              ? 12
+                              : 10)
                         : (isSmallPhone
-                              ? 6
+                              ? 4
                               : isTablet
-                              ? 10
-                              : 8),
+                              ? 8
+                              : 6),
                     margin: EdgeInsets.symmetric(
-                      horizontal: isSmallPhone ? 3 : 4,
+                      horizontal: isSmallPhone ? 2 : 3,
                     ),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: _currentPage == index
                           ? _highlightColors[index % _highlightColors.length]
                           : Colors.grey.withOpacity(0.5),
-                      boxShadow: _currentPage == index
-                          ? [
-                              BoxShadow(
-                                color:
-                                    _highlightColors[index %
-                                            _highlightColors.length]
-                                        .withOpacity(0.5),
-                                blurRadius: isSmallPhone ? 4 : 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ]
-                          : null,
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
             ),
           ],
@@ -1086,15 +1051,15 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
     return SizedBox(
       height: height,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        padding: const EdgeInsets.all(24),
+        margin: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: _cardColors[0],
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
+              blurRadius: 8,
               offset: const Offset(0, 4),
             ),
           ],
@@ -1105,23 +1070,23 @@ class _DashboardCarouselState extends State<DashboardCarousel> {
             Icon(
               Icons.campaign_rounded,
               color: Colors.white.withOpacity(0.5),
-              size: 48,
+              size: 32,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Text(
               'Aucune annonce active',
               style: TextStyle(
                 color: Colors.white.withOpacity(0.9),
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               'Les nouvelles annonces apparaîtront ici',
               style: TextStyle(
                 color: Colors.white.withOpacity(0.6),
-                fontSize: 14,
+                fontSize: 11,
               ),
               textAlign: TextAlign.center,
             ),

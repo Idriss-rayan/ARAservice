@@ -1119,7 +1119,7 @@ ${detailsController.text.isNotEmpty ? detailsController.text : "Aucun détail su
                                 ],
                               ),
                               child: Text(
-                                '${item['price'] ?? 0}€',
+                                '${item['price'] ?? 0} frs',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w700,
