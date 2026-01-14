@@ -1,4 +1,4 @@
-package com.example.araservice
+package com.idrissrayan.araservice
 
 import io.flutter.embedding.android.FlutterActivity
 

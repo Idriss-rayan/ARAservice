@@ -124,7 +124,7 @@ class _ModeConfectionPageState extends State<ModeConfectionPage>
     });
   }
 
-  void _sendWhatsApp() {
+  void _sendWhatsApp() async {
     if (_selectedProductIds.isEmpty && _selectedImages.isEmpty) {
       _showSnackBar(
         'Veuillez sélectionner au moins un produit ou ajouter une image',
@@ -141,30 +141,32 @@ class _ModeConfectionPageState extends State<ModeConfectionPage>
         """
 Bonjour, je souhaite commander un vêtement sur mesure.
 
-📦 **Produits sélectionnés:** ${_selectedProductIds.length} produit(s)
+📦 Produits sélectionnés: ${_selectedProductIds.length}
 
-👤 **Informations personnelles:**
-- Nom: ${nameController.text}
-- Quartier: ${quartierController.text}
-- Ville: ${villeController.text}
+👤 Nom: ${nameController.text}
+📍 Quartier: ${quartierController.text}
+🏙️ Ville: ${villeController.text}
 
-📏 **Mesures:**
+📏 Mesures:
 - Taille: ${tailleController.text}
 - Poitrine: ${poitrineController.text}
 - Taille/Hanche: ${tailleHancheController.text}
 
-📝 **Détails supplémentaires:**
-${detailsController.text.isNotEmpty ? detailsController.text : "Aucun détail supplémentaire"}
+📝 Détails:
+${detailsController.text.isNotEmpty ? detailsController.text : "Aucun détail"}
 
-🖼️ **Images jointes:** ${_selectedImages.length} image(s)
-
-🎯 **Service:** ${services[selectedServiceIndex]}
-📁 **Catégorie:** ${widget.subcategories[selectedCategoryIndex]}
+🎯 Service: ${services[selectedServiceIndex]}
+📁 Catégorie: ${widget.subcategories[selectedCategoryIndex]}
 """;
 
-    Share.share(message);
+    // 🔥 CONVERSION DES IMAGES
+    final List<XFile> imageFiles = _selectedImages
+        .map((file) => XFile(file.path))
+        .toList();
 
-    // Réinitialiser la sélection après l'envoi
+    await Share.shareXFiles(imageFiles, text: message);
+
+    // Réinitialisation
     setState(() {
       _selectedProductIds.clear();
       _selectedImages.clear();
